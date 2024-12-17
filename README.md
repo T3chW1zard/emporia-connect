@@ -1,13 +1,3 @@
-# 📢 Important Announcement
-
-Thank you for using this service! Unfortunately, due to the lack of support and donations, I have made the difficult decision to discontinue this API.
-
-Providing and maintaining this free service requires resources, and without sufficient support, it is no longer sustainable to keep it running. However, if we receive stable monthly contributions, I will gladly restore the service and continue to maintain it for the community.
-
-I truly appreciate everyone who has used this API and found it valuable. If you wish to contribute or support the project, please reach out. Thank you for your understanding.
-
----
-
 # Emporia Connect: Free Emporia Energy API
 
 Welcome to the official repository for the Emporia Connect API - the first and only free API for Emporia Energy devices. This project aims to revolutionize how users interact with their Emporia Energy systems by providing an open, accessible, and powerful interface.

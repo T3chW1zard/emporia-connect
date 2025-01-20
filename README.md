@@ -44,6 +44,7 @@ If you find value in our free Emporia Energy API, consider supporting its develo
 
 - Star this repository to show your appreciation
 - [Make a donation via PayPal](https://www.paypal.com/donate/?hosted_button_id=GT7JG2LEZBQZA) to help fund ongoing development and server costs
+- [Join our Discord Community](https://discord.gg/DrBdgNzyAQ) to connect with other users and developers
 - Spread the word about Emporia Connect to other Emporia Energy users and developers
 
 Thank you for being part of the Emporia Connect community. Together, we're democratizing access to Emporia Energy data and empowering users with the first free and open Emporia Energy API!

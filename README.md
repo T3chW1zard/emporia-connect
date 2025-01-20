@@ -1,3 +1,8 @@
+# 🚨 Join Our Discord Community! 🚨
+
+We now have a dedicated [Discord Server](https://discord.gg/DrBdgNzyAQ) for the Emporia Connect community! Connect with developers, energy enthusiasts, and Emporia Energy users to discuss, collaborate, and get real-time support. Click [here](https://discord.gg/DrBdgNzyAQ) to join the conversation now!
+
+
 # Emporia Connect: Free Emporia Energy API
 
 Welcome to the official repository for the Emporia Connect API - the first and only free API for Emporia Energy devices. This project aims to revolutionize how users interact with their Emporia Energy systems by providing an open, accessible, and powerful interface.

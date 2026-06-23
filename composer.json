@@ -2,7 +2,6 @@
     "name": "t3chw1zard/emporia-connect",
     "description": "A framework-agnostic PHP client for the Emporia Vue energy monitoring API.",
     "keywords": ["emporia", "energy", "vue", "monitoring", "api", "client"],
-    "version": "0.1.0",
     "license": "MIT",
     "type": "library",
     "require": {

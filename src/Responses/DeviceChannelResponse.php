@@ -32,14 +32,14 @@ readonly class DeviceChannelResponse
             && in_array($scale, [Scale::SECOND, Scale::MINUTE], true);
 
         $rawUsage = DataExtractor::float($data, 'usage');
-        $usage    = (float) Converter::toPreciseFloat($rawUsage, 3);
+        $usage = (float) Converter::toPreciseFloat($rawUsage, 3);
 
         if ($shouldConvert) {
             $usage = Converter::toWatts($usage, $scale);
         }
 
         $rawPercentage = DataExtractor::nullableFloat($data, 'percentage');
-        $percentage    = $rawPercentage !== null ? (float) Converter::toPreciseFloat($rawPercentage, 0) : null;
+        $percentage = $rawPercentage !== null ? (float) Converter::toPreciseFloat($rawPercentage, 0) : null;
 
         return new self(
             deviceGid: DataExtractor::int($data, 'deviceGid'),
@@ -57,13 +57,13 @@ readonly class DeviceChannelResponse
     public function toArray(): array
     {
         return [
-            'deviceGid'      => $this->deviceGid,
-            'channelNum'     => $this->channelNum,
-            'name'           => $this->name,
-            'currentUsage'   => $this->currentUsage,
-            'unit'           => $this->unit->value,
-            'scale'          => $this->scale->value,
-            'percentage'     => $this->percentage,
+            'deviceGid' => $this->deviceGid,
+            'channelNum' => $this->channelNum,
+            'name' => $this->name,
+            'currentUsage' => $this->currentUsage,
+            'unit' => $this->unit->value,
+            'scale' => $this->scale->value,
+            'percentage' => $this->percentage,
             'channelTypeGid' => $this->channelTypeGid,
         ];
     }

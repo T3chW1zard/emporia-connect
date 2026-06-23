@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace T3chW1zard\EmporiaConnect\Tests\Unit\Resources;
 
-use T3chW1zard\EmporiaConnect\Responses\DeviceResponse;
 use T3chW1zard\EmporiaConnect\Contracts\TransporterContract;
 use T3chW1zard\EmporiaConnect\Resources\Devices;
+use T3chW1zard\EmporiaConnect\Responses\DeviceResponse;
 use T3chW1zard\EmporiaConnect\Tests\TestCase;
 
 final class DevicesTest extends TestCase
 {
     private function makeTransporter(array $getReturn): TransporterContract
     {
-        return new class ($getReturn) implements TransporterContract {
+        return new class($getReturn) implements TransporterContract
+        {
             public function __construct(private readonly array $getReturn) {}
 
             public function get(string $uri): array

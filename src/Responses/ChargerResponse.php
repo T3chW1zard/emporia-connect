@@ -40,11 +40,11 @@ readonly class ChargerResponse
     public function toArray(): array
     {
         return [
-            'deviceGid'               => $this->deviceGid,
-            'chargerOn'               => $this->chargerOn,
-            'status'                  => $this->status,
-            'chargingRate'            => $this->chargingRate,
-            'maxChargingRate'         => $this->maxChargingRate,
+            'deviceGid' => $this->deviceGid,
+            'chargerOn' => $this->chargerOn,
+            'status' => $this->status,
+            'chargingRate' => $this->chargingRate,
+            'maxChargingRate' => $this->maxChargingRate,
             'offPeakSchedulesEnabled' => $this->offPeakSchedulesEnabled,
         ];
     }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace T3chW1zard\EmporiaConnect\Tests\Unit\Testing;
 
-use T3chW1zard\EmporiaConnect\Responses\DeviceResponse;
 use T3chW1zard\EmporiaConnect\Enums\Scale;
 use T3chW1zard\EmporiaConnect\Enums\Unit;
+use T3chW1zard\EmporiaConnect\Responses\DeviceResponse;
 use T3chW1zard\EmporiaConnect\Testing\FakeClient;
 use T3chW1zard\EmporiaConnect\Tests\TestCase;
 
@@ -16,7 +16,7 @@ final class FakeClientTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->client = new FakeClient();
+        $this->client = new FakeClient;
     }
 
     public function test_customers_me_returns_customer_response(): void

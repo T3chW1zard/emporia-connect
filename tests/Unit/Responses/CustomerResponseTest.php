@@ -11,10 +11,10 @@ final class CustomerResponseTest extends TestCase
 {
     private array $fixture = [
         'customerGid' => 12345,
-        'email'       => 'user@example.com',
-        'firstName'   => 'John',
-        'lastName'    => 'Doe',
-        'createdAt'   => '2024-01-15T10:30:00+00:00',
+        'email' => 'user@example.com',
+        'firstName' => 'John',
+        'lastName' => 'Doe',
+        'createdAt' => '2024-01-15T10:30:00+00:00',
     ];
 
     public function test_creates_from_api_response(): void

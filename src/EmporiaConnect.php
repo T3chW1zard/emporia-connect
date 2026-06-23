@@ -18,6 +18,7 @@ use T3chW1zard\EmporiaConnect\Contracts\ClientContract;
 final class EmporiaConnect
 {
     private const string COGNITO_URL = 'https://cognito-idp.us-east-2.amazonaws.com/';
+
     private const string COGNITO_CLIENT_ID = '4qte47jbstod8apnfic0bunmrq';
 
     public static function client(

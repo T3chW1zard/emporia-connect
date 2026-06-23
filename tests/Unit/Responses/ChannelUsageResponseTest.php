@@ -13,7 +13,7 @@ final class ChannelUsageResponseTest extends TestCase
 {
     public function test_creates_with_timestamps(): void
     {
-        $data     = ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001, 0.002, 0.003]];
+        $data = ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001, 0.002, 0.003]];
         $response = ChannelUsageResponse::from($data, '1', Unit::KILOWATT_HOURS, Scale::HOUR);
 
         $this->assertSame('1', $response->channelNum);
@@ -24,7 +24,7 @@ final class ChannelUsageResponseTest extends TestCase
 
     public function test_creates_without_timestamps(): void
     {
-        $data     = ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001, 0.002]];
+        $data = ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001, 0.002]];
         $response = ChannelUsageResponse::from($data, '1', Unit::KILOWATT_HOURS, Scale::HOUR, false);
 
         $this->assertIsFloat($response->usage[0]);
@@ -32,7 +32,7 @@ final class ChannelUsageResponseTest extends TestCase
 
     public function test_converts_to_watts_for_minute_scale(): void
     {
-        $data     = ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001]];
+        $data = ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001]];
         $response = ChannelUsageResponse::from($data, '1', Unit::KILOWATT_HOURS, Scale::MINUTE);
 
         // 0.001 kWh over 1 minute = 0.001 * 1000 / (60/3600) = 60 W
@@ -41,7 +41,7 @@ final class ChannelUsageResponseTest extends TestCase
 
     public function test_converts_to_array(): void
     {
-        $data  = ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => []];
+        $data = ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => []];
         $array = ChannelUsageResponse::from($data, '1', Unit::KILOWATT_HOURS, Scale::HOUR)->toArray();
 
         $this->assertArrayHasKey('channelNum', $array);

@@ -19,7 +19,8 @@ final class ClientTest extends TestCase
 
     protected function setUp(): void
     {
-        $transporter = new class implements TransporterContract {
+        $transporter = new class implements TransporterContract
+        {
             public function get(string $uri): array
             {
                 return [];

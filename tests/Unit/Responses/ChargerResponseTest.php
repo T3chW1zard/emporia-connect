@@ -26,7 +26,7 @@ final class ChargerResponseTest extends TestCase
 
     public function test_converts_to_array(): void
     {
-        $data  = ['deviceGid' => 222, 'evCharger' => ['chargerOn' => false, 'offPeakSchedulesEnabled' => false]];
+        $data = ['deviceGid' => 222, 'evCharger' => ['chargerOn' => false, 'offPeakSchedulesEnabled' => false]];
         $array = ChargerResponse::from($data)->toArray();
 
         $this->assertFalse($array['chargerOn']);

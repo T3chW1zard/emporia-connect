@@ -10,11 +10,12 @@ namespace T3chW1zard\EmporiaConnect\Enums;
 enum Unit: string
 {
     case KILOWATT_HOURS = 'KilowattHours';
-    case DOLLARS        = 'Dollars';
-    case AMP_HOURS      = 'AmpHours';
-    case TREES          = 'Trees';
+    case WATTS = 'Watts';
+    case DOLLARS = 'Dollars';
+    case AMP_HOURS = 'AmpHours';
+    case TREES = 'Trees';
     case GALLONS_OF_GAS = 'GallonsOfGas';
-    case MILES_DRIVEN   = 'MilesDriven';
-    case CARBON         = 'Carbon';
-    case VOLTAGE        = 'Voltage';
+    case MILES_DRIVEN = 'MilesDriven';
+    case CARBON = 'Carbon';
+    case VOLTAGE = 'Voltage';
 }

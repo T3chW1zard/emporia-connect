@@ -32,8 +32,8 @@ readonly class ChannelTypeResponse
     {
         return [
             'channelTypeGid' => $this->channelTypeGid,
-            'description'    => $this->description,
-            'selectable'     => $this->selectable,
+            'description' => $this->description,
+            'selectable' => $this->selectable,
         ];
     }
 }

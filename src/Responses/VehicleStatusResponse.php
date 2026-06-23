@@ -39,12 +39,12 @@ readonly class VehicleStatusResponse
     public function toArray(): array
     {
         return [
-            'vehicleGid'          => $this->vehicleGid,
-            'vehicleState'        => $this->vehicleState,
-            'batteryLevel'        => $this->batteryLevel,
-            'batteryRange'        => $this->batteryRange,
-            'chargingState'       => $this->chargingState,
-            'chargeLimitPercent'  => $this->chargeLimitPercent,
+            'vehicleGid' => $this->vehicleGid,
+            'vehicleState' => $this->vehicleState,
+            'batteryLevel' => $this->batteryLevel,
+            'batteryRange' => $this->batteryRange,
+            'chargingState' => $this->chargingState,
+            'chargeLimitPercent' => $this->chargeLimitPercent,
             'minutesToFullCharge' => $this->minutesToFullCharge,
         ];
     }

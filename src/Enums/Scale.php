@@ -10,12 +10,12 @@ namespace T3chW1zard\EmporiaConnect\Enums;
  */
 enum Scale: string
 {
-    case SECOND     = '1S';
-    case MINUTE     = '1MIN';
+    case SECOND = '1S';
+    case MINUTE = '1MIN';
     case MINUTES_15 = '15MIN';
-    case HOUR       = '1H';
-    case DAY        = '1D';
-    case WEEK       = '1W';
-    case MONTH      = '1MON';
-    case YEAR       = '1Y';
+    case HOUR = '1H';
+    case DAY = '1D';
+    case WEEK = '1W';
+    case MONTH = '1MON';
+    case YEAR = '1Y';
 }

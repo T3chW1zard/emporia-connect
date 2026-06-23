@@ -35,6 +35,6 @@ final readonly class Customers
     {
         $data = $this->transporter->get("vehicles/v2/settings?vehicleGid={$vehicleGid}");
 
-        return $data === [] ? null : VehicleStatusResponse::from($data);
+        return isset($data['vehicleGid']) ? VehicleStatusResponse::from($data) : null;
     }
 }

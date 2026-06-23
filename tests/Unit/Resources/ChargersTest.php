@@ -12,7 +12,8 @@ final class ChargersTest extends TestCase
 {
     private function makeTransporter(array $getReturn = [], array $putReturn = []): TransporterContract
     {
-        return new class ($getReturn, $putReturn) implements TransporterContract {
+        return new class($getReturn, $putReturn) implements TransporterContract
+        {
             public function __construct(private readonly array $getReturn, private readonly array $putReturn) {}
 
             public function get(string $uri): array

@@ -11,14 +11,14 @@ use T3chW1zard\EmporiaConnect\Tests\TestCase;
 final class DeviceResponseTest extends TestCase
 {
     private array $fixture = [
-        'deviceGid'            => 9999,
+        'deviceGid' => 9999,
         'manufacturerDeviceId' => 'ABC123',
-        'model'                => 'Vue002',
-        'firmware'             => '1.7.4',
-        'parentDeviceGid'      => null,
-        'parentChannelNum'     => null,
-        'deviceConnected'      => ['connected' => true, 'offlineSince' => null],
-        'devices'              => [
+        'model' => 'Vue002',
+        'firmware' => '1.7.4',
+        'parentDeviceGid' => null,
+        'parentChannelNum' => null,
+        'deviceConnected' => ['connected' => true, 'offlineSince' => null],
+        'devices' => [
             ['channels' => [['channelNum' => '1'], ['channelNum' => '2']]],
         ],
     ];
@@ -38,7 +38,7 @@ final class DeviceResponseTest extends TestCase
     {
         $data = $this->fixture;
         $data['deviceConnected'] = [
-            'connected'    => false,
+            'connected' => false,
             'offlineSince' => 'since 2024-06-01T12:00:00Z',
         ];
 

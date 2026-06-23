@@ -13,15 +13,17 @@ use T3chW1zard\EmporiaConnect\Exceptions\EmporiaException;
 interface TransporterContract
 {
     /**
-     * @throws EmporiaException
      * @return array<string, mixed>
+     *
+     * @throws EmporiaException
      */
     public function get(string $uri): array;
 
     /**
      * @param  array<string, mixed>  $payload
-     * @throws EmporiaException
      * @return array<string, mixed>
+     *
+     * @throws EmporiaException
      */
     public function put(string $uri, array $payload): array;
 }

@@ -56,7 +56,8 @@ final class CognitoAuthTest extends TestCase
 
     public function test_uses_cache_to_avoid_repeat_calls(): void
     {
-        $cache = new class implements CacheInterface {
+        $cache = new class implements CacheInterface
+        {
             public array $store = [];
 
             public function get($key, $default = null): mixed
@@ -67,18 +68,21 @@ final class CognitoAuthTest extends TestCase
             public function set($key, $value, $ttl = null): bool
             {
                 $this->store[$key] = $value;
+
                 return true;
             }
 
             public function delete($key): bool
             {
                 unset($this->store[$key]);
+
                 return true;
             }
 
             public function clear(): bool
             {
                 $this->store = [];
+
                 return true;
             }
 
@@ -107,7 +111,7 @@ final class CognitoAuthTest extends TestCase
             new Response(200, [], json_encode(['AuthenticationResult' => ['IdToken' => 'fake-id-token', 'ExpiresIn' => 3600]])),
         ]);
 
-        $auth   = $this->makeAuth($mock, $cache);
+        $auth = $this->makeAuth($mock, $cache);
         $token1 = $auth->authenticate('user@example.com', 'secret');
         $token2 = $auth->authenticate('user@example.com', 'secret');
 

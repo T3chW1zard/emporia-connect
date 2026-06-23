@@ -35,7 +35,7 @@ final class DeviceChannelResponseTest extends TestCase
 
     public function test_converts_to_array(): void
     {
-        $data  = ['deviceGid' => 1, 'channelNum' => '1', 'name' => 'Main', 'usage' => 0.5, 'percentage' => 100.0, 'channelTypeGid' => 1];
+        $data = ['deviceGid' => 1, 'channelNum' => '1', 'name' => 'Main', 'usage' => 0.5, 'percentage' => 100.0, 'channelTypeGid' => 1];
         $array = DeviceChannelResponse::from($data, Unit::KILOWATT_HOURS, Scale::HOUR)->toArray();
 
         $this->assertArrayHasKey('deviceGid', $array);

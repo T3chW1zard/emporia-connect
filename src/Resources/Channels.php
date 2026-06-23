@@ -24,7 +24,7 @@ final readonly class Channels
     public function all(int $deviceGid, Scale $scale, Unit $unit = Unit::KILOWATT_HOURS): array
     {
         $instant = (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.000\Z');
-        $uri     = sprintf(
+        $uri = sprintf(
             'AppAPI?apiMethod=getDeviceListUsages&deviceGids=%d&instant=%s&scale=%s&energyUnit=%s',
             $deviceGid,
             $instant,
@@ -32,15 +32,15 @@ final readonly class Channels
             $unit->value,
         );
 
-        $data    = $this->transporter->get($uri);
-        $usages  = $data['deviceListUsages'] ?? null;
+        $data = $this->transporter->get($uri);
+        $usages = $data['deviceListUsages'] ?? null;
         /** @var array<int, array<string, mixed>> $devices */
         $devices = is_array($usages) && is_array($usages['devices'] ?? null) ? $usages['devices'] : [];
-        $first   = $devices[0] ?? null;
+        $first = $devices[0] ?? null;
         /** @var array<int, array<string, mixed>> $channels */
         $channels = is_array($first) && is_array($first['channelUsages'] ?? null) ? $first['channelUsages'] : [];
 
-        return array_map(fn(array $u): DeviceChannelResponse => DeviceChannelResponse::from($u, $unit, $scale), $channels);
+        return array_map(fn (array $u): DeviceChannelResponse => DeviceChannelResponse::from($u, $unit, $scale), $channels);
     }
 
     public function find(int $deviceGid, string $channelNum, Scale $scale, Unit $unit = Unit::KILOWATT_HOURS): ?DeviceChannelResponse
@@ -64,19 +64,19 @@ final readonly class Channels
         bool $withTimestamps = true,
     ): ChannelUsageResponse {
         $defaultStart = match ($scale) {
-            Scale::SECOND     => '-1 hour',
-            Scale::MINUTE     => '-12 hours',
+            Scale::SECOND => '-1 hour',
+            Scale::MINUTE => '-12 hours',
             Scale::MINUTES_15 => '-1 day',
-            Scale::HOUR       => '-1 day',
-            Scale::DAY        => '-1 week',
-            Scale::WEEK       => '-1 month',
-            Scale::MONTH      => '-1 year',
-            Scale::YEAR       => '-5 years',
+            Scale::HOUR => '-1 day',
+            Scale::DAY => '-1 week',
+            Scale::WEEK => '-1 month',
+            Scale::MONTH => '-1 year',
+            Scale::YEAR => '-5 years',
         };
 
-        $now       = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         $startTime = ($start !== null ? new DateTimeImmutable($start) : $now->modify($defaultStart))->format('Y-m-d\TH:i:s.000\Z');
-        $endTime   = ($end !== null ? new DateTimeImmutable($end) : $now)->format('Y-m-d\TH:i:s.000\Z');
+        $endTime = ($end !== null ? new DateTimeImmutable($end) : $now)->format('Y-m-d\TH:i:s.000\Z');
 
         $uri = sprintf(
             'AppAPI?apiMethod=getChartUsage&deviceGid=%d&channel=%s&start=%s&end=%s&scale=%s&energyUnit=%s',

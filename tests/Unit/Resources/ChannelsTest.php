@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace T3chW1zard\EmporiaConnect\Tests\Unit\Resources;
 
-use T3chW1zard\EmporiaConnect\Responses\DeviceChannelResponse;
 use T3chW1zard\EmporiaConnect\Contracts\TransporterContract;
 use T3chW1zard\EmporiaConnect\Enums\Scale;
 use T3chW1zard\EmporiaConnect\Enums\Unit;
 use T3chW1zard\EmporiaConnect\Resources\Channels;
+use T3chW1zard\EmporiaConnect\Responses\DeviceChannelResponse;
 use T3chW1zard\EmporiaConnect\Tests\TestCase;
 
 final class ChannelsTest extends TestCase
 {
     private function makeTransporter(array $getReturn): TransporterContract
     {
-        return new class ($getReturn) implements TransporterContract {
+        return new class($getReturn) implements TransporterContract
+        {
             public function __construct(private readonly array $getReturn) {}
 
             public function get(string $uri): array
@@ -53,7 +54,7 @@ final class ChannelsTest extends TestCase
     {
         $usage = (new Channels($this->makeTransporter([
             'firstUsageInstant' => '2024-06-01T00:00:00Z',
-            'usageList'         => [0.001, 0.002],
+            'usageList' => [0.001, 0.002],
         ])))->usage(1, '1', Scale::HOUR, Unit::KILOWATT_HOURS);
 
         $this->assertCount(2, $usage->usage);

@@ -25,23 +25,24 @@ final class FakeClient implements ClientContract, TransporterContract
     public function get(string $uri): array
     {
         return match (true) {
-            str_starts_with($uri, 'customers/devices/status')             => $this->deviceStatusFixture(),
-            str_starts_with($uri, 'customers/devices')                    => $this->devicesFixture(),
-            str_starts_with($uri, 'customers/vehicles')                   => ['vehicles' => []],
-            str_starts_with($uri, 'customers')                            => $this->customerFixture(),
+            str_starts_with($uri, 'customers/devices/status') => $this->deviceStatusFixture(),
+            str_starts_with($uri, 'customers/devices') => $this->devicesFixture(),
+            str_starts_with($uri, 'customers/vehicles') => ['vehicles' => []],
+            str_starts_with($uri, 'customers') => $this->customerFixture(),
+            str_starts_with($uri, 'vehicles/v2/settings') => $this->vehicleStatusFixture(),
             str_starts_with($uri, 'AppAPI?apiMethod=getDeviceListUsages') => $this->channelListFixture(),
-            str_starts_with($uri, 'AppAPI?apiMethod=getChartUsage')       => $this->chartUsageFixture(),
-            str_starts_with($uri, 'devices/channels/channeltypes')        => ['channelTypes' => []],
-            default                                                        => [],
+            str_starts_with($uri, 'AppAPI?apiMethod=getChartUsage') => $this->chartUsageFixture(),
+            str_starts_with($uri, 'devices/channels/channeltypes') => ['channelTypes' => []],
+            default => [],
         };
     }
 
     public function put(string $uri, array $payload): array
     {
         return match (true) {
-            str_starts_with($uri, 'devices/outlet')    => $this->outletFixture(true),
+            str_starts_with($uri, 'devices/outlet') => $this->outletFixture(true),
             str_starts_with($uri, 'devices/evcharger') => $this->chargerFixture(true),
-            default                                     => [],
+            default => [],
         };
     }
 
@@ -117,5 +118,19 @@ final class FakeClient implements ClientContract, TransporterContract
     private function chartUsageFixture(): array
     {
         return ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001, 0.002, 0.003]];
+    }
+
+    /** @return array<string, mixed> */
+    private function vehicleStatusFixture(): array
+    {
+        return [
+            'vehicleGid' => 1,
+            'vehicleState' => 'online',
+            'batteryLevel' => 80.0,
+            'batteryRange' => 200.0,
+            'chargingState' => 'Disconnected',
+            'chargeLimitPercent' => 90.0,
+            'minutesToFullCharge' => 0,
+        ];
     }
 }

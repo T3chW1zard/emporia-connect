@@ -25,20 +25,17 @@ final readonly class Transporter implements TransporterContract
     public function get(string $uri): array
     {
         try {
-            $response = $this->client->get(self::BASE_URL . $uri, [
+            $response = $this->client->get(self::BASE_URL.$uri, [
                 'headers' => [
-                    'Accept'    => 'application/json',
-                    'Authtoken' => 'Bearer ' . $this->token,
+                    'Accept' => 'application/json',
+                    'Authtoken' => 'Bearer '.$this->token,
                 ],
             ]);
         } catch (GuzzleException $e) {
-            throw new EmporiaException('Emporia API request failed: ' . $e->getMessage(), $e->getCode(), previous: $e);
+            throw new EmporiaException('Emporia API request failed: '.$e->getMessage(), $e->getCode(), previous: $e);
         }
 
-        /** @var array<string, mixed> $decoded */
-        $decoded = (array) json_decode((string) $response->getBody(), true);
-
-        return $decoded;
+        return $this->decodeJson((string) $response->getBody(), $uri);
     }
 
     /**
@@ -48,20 +45,37 @@ final readonly class Transporter implements TransporterContract
     public function put(string $uri, array $payload): array
     {
         try {
-            $response = $this->client->put(self::BASE_URL . $uri, [
+            $response = $this->client->put(self::BASE_URL.$uri, [
                 'headers' => [
-                    'Accept'    => 'application/json',
-                    'Authtoken' => 'Bearer ' . $this->token,
+                    'Accept' => 'application/json',
+                    'Authtoken' => 'Bearer '.$this->token,
                 ],
                 'json' => $payload,
             ]);
         } catch (GuzzleException $e) {
-            throw new EmporiaException('Emporia API request failed: ' . $e->getMessage(), $e->getCode(), previous: $e);
+            throw new EmporiaException('Emporia API request failed: '.$e->getMessage(), $e->getCode(), previous: $e);
         }
 
-        /** @var array<string, mixed> $decoded */
-        $decoded = (array) json_decode((string) $response->getBody(), true);
+        return $this->decodeJson((string) $response->getBody(), $uri);
+    }
 
-        return $decoded;
+    /**
+     * @return array<string, mixed>
+     *
+     * @throws EmporiaException
+     */
+    private function decodeJson(string $body, string $uri): array
+    {
+        $decoded = json_decode($body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new EmporiaException(sprintf(
+                'Failed to decode JSON response from %s: %s',
+                $uri,
+                json_last_error_msg(),
+            ));
+        }
+
+        return is_array($decoded) ? $decoded : [];
     }
 }

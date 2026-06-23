@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace T3chW1zard\EmporiaConnect\Responses;
 
 use DateTimeImmutable;
+use Exception;
+use T3chW1zard\EmporiaConnect\Exceptions\EmporiaException;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
@@ -35,16 +37,20 @@ readonly class DeviceResponse
     public static function from(array $data): self
     {
         /** @var array<string, mixed> $connected */
-        $connected    = DataExtractor::array($data, 'deviceConnected');
+        $connected = DataExtractor::array($data, 'deviceConnected');
         $offlineSince = null;
 
         $rawOffline = DataExtractor::nullableString($connected, 'offlineSince');
         if ($rawOffline !== null) {
-            $raw          = (string) preg_replace('/^since /i', '', $rawOffline);
-            $offlineSince = new DateTimeImmutable($raw);
+            $raw = (string) preg_replace('/^since /i', '', $rawOffline);
+            try {
+                $offlineSince = new DateTimeImmutable($raw);
+            } catch (Exception $e) {
+                throw new EmporiaException("Invalid offlineSince date '{$raw}': ".$e->getMessage(), $e->getCode(), previous: $e);
+            }
         }
 
-        $channels   = [];
+        $channels = [];
         /** @var array<int, mixed> $subDevices */
         $subDevices = DataExtractor::array($data, 'devices');
 
@@ -61,7 +67,7 @@ readonly class DeviceResponse
                 }
                 /** @var array<string, mixed> $typedChannel */
                 $typedChannel = $ch;
-                $channels[]   = DataExtractor::string($typedChannel, 'channelNum');
+                $channels[] = DataExtractor::string($typedChannel, 'channelNum');
             }
         }
 
@@ -91,21 +97,21 @@ readonly class DeviceResponse
     public function toArray(): array
     {
         return [
-            'deviceGid'            => $this->deviceGid,
+            'deviceGid' => $this->deviceGid,
             'manufacturerDeviceId' => $this->manufacturerDeviceId,
-            'model'                => $this->model,
-            'firmware'             => $this->firmware,
-            'parentDeviceGid'      => $this->parentDeviceGid,
-            'parentChannelNum'     => $this->parentChannelNum,
-            'isConnected'          => $this->isConnected,
-            'offlineSince'         => $this->offlineSince?->format(DateTimeImmutable::ATOM),
-            'channels'             => $this->channels,
-            'deviceName'           => $this->deviceName,
-            'displayName'          => $this->displayName,
-            'zipCode'              => $this->zipCode,
-            'timeZone'             => $this->timeZone,
-            'latitude'             => $this->latitude,
-            'longitude'            => $this->longitude,
+            'model' => $this->model,
+            'firmware' => $this->firmware,
+            'parentDeviceGid' => $this->parentDeviceGid,
+            'parentChannelNum' => $this->parentChannelNum,
+            'isConnected' => $this->isConnected,
+            'offlineSince' => $this->offlineSince?->format(DateTimeImmutable::ATOM),
+            'channels' => $this->channels,
+            'deviceName' => $this->deviceName,
+            'displayName' => $this->displayName,
+            'zipCode' => $this->zipCode,
+            'timeZone' => $this->timeZone,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
         ];
     }
 }

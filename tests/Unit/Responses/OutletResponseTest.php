@@ -21,7 +21,7 @@ final class OutletResponseTest extends TestCase
 
     public function test_converts_to_array(): void
     {
-        $data  = ['deviceGid' => 111, 'outlet' => ['outletOn' => false, 'loadGid' => null, 'schedules' => []]];
+        $data = ['deviceGid' => 111, 'outlet' => ['outletOn' => false, 'loadGid' => null, 'schedules' => []]];
         $array = OutletResponse::from($data)->toArray();
 
         $this->assertFalse($array['outletOn']);

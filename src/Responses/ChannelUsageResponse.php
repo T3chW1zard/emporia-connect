@@ -36,19 +36,19 @@ readonly class ChannelUsageResponse
             && in_array($scale, [Scale::SECOND, Scale::MINUTE], true);
 
         $modifier = match ($scale) {
-            Scale::SECOND     => '+1 second',
-            Scale::MINUTE     => '+1 minute',
+            Scale::SECOND => '+1 second',
+            Scale::MINUTE => '+1 minute',
             Scale::MINUTES_15 => '+15 minutes',
-            Scale::HOUR       => '+1 hour',
-            Scale::DAY        => '+1 day',
-            Scale::WEEK       => '+1 week',
-            Scale::MONTH      => '+1 month',
-            Scale::YEAR       => '+1 year',
+            Scale::HOUR => '+1 hour',
+            Scale::DAY => '+1 day',
+            Scale::WEEK => '+1 week',
+            Scale::MONTH => '+1 month',
+            Scale::YEAR => '+1 year',
         };
 
         $firstInstant = DataExtractor::string($data, 'firstUsageInstant', 'now');
-        $currentTime  = new DateTimeImmutable($firstInstant);
-        $usages       = [];
+        $currentTime = new DateTimeImmutable($firstInstant);
+        $usages = [];
 
         foreach (DataExtractor::array($data, 'usageList') as $raw) {
             $value = (float) Converter::toPreciseFloat(is_scalar($raw) ? (float) $raw : 0.0);
@@ -63,7 +63,7 @@ readonly class ChannelUsageResponse
             channelNum: $channelNum,
             firstUsageInstant: $firstInstant,
             scale: $scale,
-            unit: $shouldConvert ? Unit::KILOWATT_HOURS : $unit,
+            unit: $shouldConvert ? Unit::WATTS : $unit,
             usage: $usages,
         );
     }
@@ -72,11 +72,11 @@ readonly class ChannelUsageResponse
     public function toArray(): array
     {
         return [
-            'channelNum'        => $this->channelNum,
+            'channelNum' => $this->channelNum,
             'firstUsageInstant' => $this->firstUsageInstant,
-            'scale'             => $this->scale->value,
-            'unit'              => $this->unit->value,
-            'usage'             => $this->usage,
+            'scale' => $this->scale->value,
+            'unit' => $this->unit->value,
+            'usage' => $this->usage,
         ];
     }
 }

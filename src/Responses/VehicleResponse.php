@@ -37,12 +37,12 @@ readonly class VehicleResponse
     public function toArray(): array
     {
         return [
-            'vehicleGid'  => $this->vehicleGid,
-            'vendor'      => $this->vendor,
+            'vehicleGid' => $this->vehicleGid,
+            'vendor' => $this->vendor,
             'displayName' => $this->displayName,
-            'make'        => $this->make,
-            'model'       => $this->model,
-            'year'        => $this->year,
+            'make' => $this->make,
+            'model' => $this->model,
+            'year' => $this->year,
         ];
     }
 }

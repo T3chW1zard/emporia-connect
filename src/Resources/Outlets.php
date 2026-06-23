@@ -28,7 +28,7 @@ final readonly class Outlets
     {
         $data = $this->transporter->put('devices/outlet', [
             'deviceGid' => $deviceGid,
-            'outlet'    => ['outletOn' => $on],
+            'outlet' => ['outletOn' => $on],
         ]);
 
         return OutletResponse::from($data);

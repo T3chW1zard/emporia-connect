@@ -29,10 +29,11 @@ final readonly class CognitoAuth
     {
         $cacheKey = $this->cacheKey($username);
 
-        if ($this->cache instanceof CacheInterface && $this->cache->has($cacheKey)) {
+        if ($this->cache instanceof CacheInterface) {
             $cached = $this->cache->get($cacheKey);
-
-            return is_string($cached) ? $cached : '';
+            if (is_string($cached) && $cached !== '') {
+                return $cached;
+            }
         }
 
         try {
@@ -43,17 +44,17 @@ final readonly class CognitoAuth
                 ],
                 'json' => [
                     'AuthParameters' => ['USERNAME' => $username, 'PASSWORD' => $password],
-                    'AuthFlow'       => 'USER_PASSWORD_AUTH',
-                    'ClientId'       => $this->clientId,
+                    'AuthFlow' => 'USER_PASSWORD_AUTH',
+                    'ClientId' => $this->clientId,
                 ],
             ]);
         } catch (GuzzleException $e) {
-            throw new AuthenticationException('HTTP request to Cognito failed: ' . $e->getMessage(), $e->getCode(), previous: $e);
+            throw new AuthenticationException('HTTP request to Cognito failed: '.$e->getMessage(), $e->getCode(), previous: $e);
         }
 
         if ($response->getStatusCode() !== 200) {
             throw new AuthenticationException(
-                'Cognito authentication failed with status ' . $response->getStatusCode(),
+                'Cognito authentication failed with status '.$response->getStatusCode(),
             );
         }
 
@@ -66,10 +67,15 @@ final readonly class CognitoAuth
             throw new AuthenticationException('Authentication failed: No IdToken in response.');
         }
 
-        $idToken   = $auth['IdToken'];
-        $token     = is_string($idToken) ? $idToken : '';
+        $idToken = $auth['IdToken'];
+        $token = is_string($idToken) ? $idToken : '';
+
+        if ($token === '') {
+            throw new AuthenticationException('Authentication failed: IdToken is empty.');
+        }
+
         $expiresRaw = $auth['ExpiresIn'] ?? null;
-        $expiresIn = is_int($expiresRaw) ? $expiresRaw - 10 : 3540;
+        $expiresIn = max(1, is_int($expiresRaw) ? $expiresRaw - 10 : 3540);
 
         $this->cache?->set($cacheKey, $token, $expiresIn);
 
@@ -78,6 +84,6 @@ final readonly class CognitoAuth
 
     private function cacheKey(string $username): string
     {
-        return 'emporia_token_' . md5($username . $this->clientId);
+        return 'emporia_token_'.md5($username.$this->clientId);
     }
 }

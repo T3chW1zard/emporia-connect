@@ -37,10 +37,10 @@ readonly class CustomerResponse
     {
         return [
             'customerGid' => $this->customerGid,
-            'email'       => $this->email,
-            'firstName'   => $this->firstName,
-            'lastName'    => $this->lastName,
-            'createdAt'   => $this->createdAt->format(DateTimeImmutable::ATOM),
+            'email' => $this->email,
+            'firstName' => $this->firstName,
+            'lastName' => $this->lastName,
+            'createdAt' => $this->createdAt->format(DateTimeImmutable::ATOM),
         ];
     }
 }

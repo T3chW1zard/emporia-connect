@@ -23,12 +23,12 @@ final class EmporiaConnectFeatureTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->mock = new MockHandler();
+        $this->mock = new MockHandler;
     }
 
     private function makeClient(string $token = 'test-token'): Client
     {
-        $guzzle      = new GuzzleClient(['handler' => HandlerStack::create($this->mock)]);
+        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($this->mock)]);
         $transporter = new Transporter($guzzle, $token);
 
         return new Client($transporter);
@@ -88,7 +88,7 @@ final class EmporiaConnectFeatureTest extends TestCase
         $this->mockJson(['outlets' => [['deviceGid' => 10, 'outlet' => ['outletOn' => false, 'loadGid' => null, 'schedules' => []]]], 'evChargers' => []]);
         $this->mockJson(['deviceGid' => 10, 'outlet' => ['outletOn' => true, 'loadGid' => null, 'schedules' => []]]);
 
-        $client  = $this->makeClient();
+        $client = $this->makeClient();
         $outlets = $client->outlets()->all();
         $this->assertFalse($outlets[0]->outletOn);
 

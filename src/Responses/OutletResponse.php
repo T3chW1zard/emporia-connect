@@ -38,8 +38,8 @@ readonly class OutletResponse
     {
         return [
             'deviceGid' => $this->deviceGid,
-            'outletOn'  => $this->outletOn,
-            'loadGid'   => $this->loadGid,
+            'outletOn' => $this->outletOn,
+            'loadGid' => $this->loadGid,
             'schedules' => $this->schedules,
         ];
     }

@@ -14,7 +14,7 @@ use T3chW1zard\EmporiaConnect\Exceptions\EmporiaException;
  */
 final readonly class Transporter implements TransporterContract
 {
-    private const string BASE_URL = 'https://api.emporiaenergy.com/';
+    private const BASE_URL = 'https://api.emporiaenergy.com/';
 
     public function __construct(
         private Client $client,

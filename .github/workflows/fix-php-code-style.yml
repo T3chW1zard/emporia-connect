@@ -1,0 +1,19 @@
+name: fix-php-code-style
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  code-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - run: composer install --prefer-dist --no-progress
+      - run: vendor/bin/php-cs-fixer fix
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "fix: apply php-cs-fixer changes"

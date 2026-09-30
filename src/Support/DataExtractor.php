@@ -93,13 +93,16 @@ final class DataExtractor
     /**
      * Parse a date string. Invalid or missing values return null instead of throwing.
      *
+     * The API reports offline times as e.g. "since Sep 29, 2026, 5:30 PM"; the "since" prefix is ignored.
+     *
      * @param  array<array-key, mixed>  $data
      */
     public static function nullableDate(array $data, string $key): ?DateTimeImmutable
     {
         $value = self::nullableString($data, $key);
+        $value = $value === null ? null : trim((string) preg_replace('/^\s*since\s+/i', '', $value));
 
-        if ($value === null || trim($value) === '') {
+        if ($value === null || $value === '') {
             return null;
         }
 

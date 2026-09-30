@@ -57,6 +57,21 @@ final class ResponsesTest extends TestCase
         $this->assertNull($device->channel('nope'));
     }
 
+    public function test_offline_since_with_since_prefix_is_parsed(): void
+    {
+        // Exact format returned by the live API for an offline Vue monitor.
+        $offline = ['deviceGid' => 243600, 'connected' => false, 'offlineSince' => 'since Sep 29, 2026, 5:30 PM'];
+
+        $this->assertSame('2026-09-29T17:30:00+00:00', DeviceConnectionResponse::from($offline)->offlineSince?->format(DATE_ATOM));
+
+        $device = DeviceResponse::from(['deviceGid' => 243600, 'model' => 'VUE002', 'deviceConnected' => $offline]);
+        $this->assertFalse($device->connected);
+        $this->assertSame('2026-09-29T17:30:00+00:00', $device->offlineSince?->format(DATE_ATOM));
+
+        $status = DeviceStatusResponse::from(['devicesConnected' => [$offline]]);
+        $this->assertSame('2026-09-29T17:30:00+00:00', $status->connectionFor(243600)?->offlineSince?->format(DATE_ATOM));
+    }
+
     public function test_device_with_connection_and_location_properties_are_immutable_copies(): void
     {
         $device = new DeviceResponse(1, 'id', 'VUE002', null);

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2026-09-30
+
+### Fixed
+- `offlineSince` is now parsed when the API returns it as `"since Sep 29, 2026, 5:30 PM"`; it was `null` before.
+
 ## [1.0.0] - 2026-09-30
 
 First release.

@@ -102,5 +102,8 @@ final class SupportTest extends TestCase
         $this->assertSame('2024-01-01', DataExtractor::nullableDate($data, 'date')?->format('Y-m-d'));
         $this->assertNull(DataExtractor::nullableDate($data, 'bad'));
         $this->assertNull(DataExtractor::nullableDate($data, 'missing'));
+        $this->assertSame('2026-09-29T17:30:00+00:00', DataExtractor::nullableDate(['d' => 'since Sep 29, 2026, 5:30 PM'], 'd')?->format(DATE_ATOM));
+        $this->assertSame('2026-09-29T17:30:00+00:00', DataExtractor::nullableDate(['d' => 'Since Sep 29, 2026, 5:30 PM'], 'd')?->format(DATE_ATOM));
+        $this->assertNull(DataExtractor::nullableDate(['d' => 'since '], 'd'));
     }
 }

@@ -10,8 +10,8 @@ use T3chW1zard\EmporiaConnect\Enums\Scale;
 /**
  * Unit conversion helpers.
  *
- * The API returns energy (kWh) consumed during each data point. PyEmVue leaves the
- * conversion to the caller ("1MIN in kW = 60 * result"); these helpers do it for you.
+ * The API returns energy (kWh) consumed during each data point; these helpers convert
+ * it to average power.
  */
 final class Converter
 {

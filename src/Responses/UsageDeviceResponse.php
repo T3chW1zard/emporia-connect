@@ -13,7 +13,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Usage of one device's channels at an instant (PyEmVue: VueUsageDevice).
+ * Usage of one device's channels at an instant.
  */
 final readonly class UsageDeviceResponse implements ResponseContract
 {

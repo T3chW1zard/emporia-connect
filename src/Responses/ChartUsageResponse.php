@@ -15,7 +15,7 @@ use T3chW1zard\EmporiaConnect\Support\Converter;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Usage of a channel over a time range (PyEmVue: get_chart_usage).
+ * Usage of a channel over a time range.
  *
  * $usage holds one value per $scale period starting at $firstUsageInstant; null means no data.
  */

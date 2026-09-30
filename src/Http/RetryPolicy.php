@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace T3chW1zard\EmporiaConnect\Http;
 
 /**
- * Exponential back-off for 5xx responses, same defaults as PyEmVue's Auth.request().
+ * Exponential back-off for 5xx responses.
  */
 final readonly class RetryPolicy
 {

@@ -11,7 +11,7 @@ use T3chW1zard\EmporiaConnect\Exceptions\TransportException;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Checks whether the Emporia API is down for maintenance (PyEmVue's down_for_maintenance).
+ * Checks whether the Emporia API is down for maintenance.
  *
  * During normal operation the S3 file answers "access denied"/404; during maintenance it
  * contains e.g. {"msg": "down"}.

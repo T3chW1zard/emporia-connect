@@ -26,7 +26,7 @@ use T3chW1zard\EmporiaConnect\Support\Time;
  */
 final readonly class Usage
 {
-    /** Channels for which the chart endpoint returns no data (PyEmVue returns an empty list). */
+    /** Channels for which the chart endpoint returns no data; an empty result is returned without a request. */
     private const CHANNELS_WITHOUT_CHART = ['MainsFromGrid', 'MainsToGrid'];
 
     public function __construct(
@@ -35,10 +35,10 @@ final readonly class Usage
     ) {}
 
     /**
-     * Usage of every channel of one or more devices at an instant (PyEmVue: get_device_list_usage).
+     * Usage of every channel of one or more devices at an instant.
      *
-     * The API sometimes returns null for channels whose latest data is not in yet; like PyEmVue the
-     * request is retried with exponential back-off and the most complete result is returned.
+     * The API sometimes returns null for channels whose latest data is not in yet; the
+     * request is then retried with exponential back-off and the most complete result is returned.
      *
      * @param  int|list<int>  $deviceGids
      * @return array<int, UsageDeviceResponse> keyed by device gid
@@ -98,7 +98,7 @@ final readonly class Usage
     }
 
     /**
-     * Usage of one channel over a time range (PyEmVue: get_chart_usage).
+     * Usage of one channel over a time range.
      *
      * When $start is omitted a scale dependent window before $end is used (e.g. 12 hours for minutes).
      */

@@ -18,7 +18,7 @@ final readonly class Devices
     public function __construct(private TransporterContract $transporter) {}
 
     /**
-     * All devices, with nested sub-devices flattened into the list (PyEmVue: get_devices).
+     * All devices, with nested sub-devices flattened into the list.
      *
      * @return list<DeviceResponse>
      */
@@ -57,7 +57,7 @@ final readonly class Devices
     }
 
     /**
-     * Return the device with its location properties loaded (PyEmVue: populate_device_properties).
+     * Return the device with its location properties loaded.
      */
     public function populateLocationProperties(DeviceResponse $device): DeviceResponse
     {
@@ -65,7 +65,7 @@ final readonly class Devices
     }
 
     /**
-     * Outlets, chargers and online status of all devices (PyEmVue: get_devices_status).
+     * Outlets, chargers and online status of all devices.
      */
     public function status(): DeviceStatusResponse
     {
@@ -73,7 +73,7 @@ final readonly class Devices
     }
 
     /**
-     * Return the given devices with their online status refreshed (PyEmVue: get_devices_status(device_list)).
+     * Return the given devices with their online status refreshed.
      *
      * @param  list<DeviceResponse>  $devices
      * @return list<DeviceResponse>

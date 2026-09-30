@@ -9,7 +9,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * A measuring channel of a device (PyEmVue: VueDeviceChannel).
+ * A measuring channel of a device.
  *
  * The channel number is used by the usage endpoints; "1,2,3" is the mains, "Balance" the unmonitored remainder.
  */
@@ -58,7 +58,7 @@ final readonly class DeviceChannelResponse implements ResponseContract
     }
 
     /**
-     * Request body for updating the channel (PyEmVue: as_dictionary).
+     * Request body for updating the channel.
      *
      * @return array<string, mixed>
      */

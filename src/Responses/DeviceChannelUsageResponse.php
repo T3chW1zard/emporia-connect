@@ -15,7 +15,7 @@ use T3chW1zard\EmporiaConnect\Support\Converter;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Usage of a single channel (PyEmVue: VueDeviceChannelUsage).
+ * Usage of a single channel.
  *
  * $usage is the energy used during one $scale period, in $unit. Smart plugs and sub-panels
  * that hang off this channel are available in $nestedDevices.

@@ -3,16 +3,14 @@
 A framework-agnostic PHP 8.2+ client for the [Emporia Energy](https://www.emporiaenergy.com/) Vue API:
 energy monitors, smart plugs and EV chargers.
 
-It is a full PHP port of [PyEmVue](https://github.com/magico13/PyEmVue): every PyEmVue call is
-available, with typed, immutable response objects, token caching, and first-class Laravel and
-Symfony integration.
+It covers the full API: devices, usage, outlets, EV chargers and vehicles. It comes with typed,
+immutable response objects, token caching, and first-class Laravel and Symfony integration.
 
 ## Features
 
-- Every PyEmVue feature: devices, location properties, device status, channels, channel types,
-  instant usage (with nested smart plugs), chart usage, outlets, EV chargers, vehicles and the
-  maintenance check
-- AWS Cognito login with **SRP** (like the Emporia app and PyEmVue) or plain password auth
+- Devices, location properties, device status, channels, channel types, instant usage (with
+  nested smart plugs), chart usage, outlets, EV chargers, vehicles and the maintenance check
+- AWS Cognito login with **SRP** (like the Emporia app) or plain password auth
 - **Token caching** in any PSR-16 or PSR-6 cache (or a JSON file). Tokens are refreshed with the
   refresh token, so the client logs in with your password only when it has to
 - Automatic token refresh on expiry or a `401`, and retries with exponential back-off on `5xx`
@@ -63,7 +61,7 @@ requests (and later PHP processes) reuse or refresh it instead of logging in aga
 // PSR-16 (Laravel cache repository, Symfony Psr16Cache, ...) or PSR-6 (Symfony cache pools, ...)
 $client = EmporiaConnect::client('you@example.com', 'secret', cache: $cache);
 
-// A JSON token file, like PyEmVue's token_storage_file
+// A JSON token file
 $client = EmporiaConnect::builder()
     ->withCredentials('you@example.com', 'secret')
     ->withTokenFile(__DIR__.'/storage/emporia-tokens.json')
@@ -97,33 +95,27 @@ $client = EmporiaConnect::builder()
 
 ## API reference
 
-Each PyEmVue method maps to a method in this package:
-
-| PyEmVue | emporia-connect |
+| Method | Description |
 |---|---|
-| `login(...)` | `EmporiaConnect::client()` / `fromTokens()` / `builder()` |
-| `down_for_maintenance()` | `$client->downForMaintenance()` |
-| `get_customer_details()` | `$client->customers()->me()` |
-| `get_devices()` | `$client->devices()->all()` |
-| — | `$client->devices()->find($gid)` |
-| `populate_device_properties(device)` | `$client->devices()->populateLocationProperties($device)` / `locationProperties($gid)` |
-| `get_devices_status(device_list)` | `$client->devices()->status()` / `withConnectionStatus($devices)` |
-| `update_channel(channel)` | `$client->channels()->update($channel->withName('Oven'))` |
-| — | `$client->channels()->all($gid)` / `find($gid, $channelNum)` |
-| `get_channel_types()` | `$client->channels()->types()` |
-| `get_device_list_usage(gids, instant, scale, unit)` | `$client->usage()->devices($gids, $instant, $scale, $unit)` |
-| `get_chart_usage(channel, start, end, scale, unit)` | `$client->usage()->chart($gid, $channelNum, $start, $end, $scale, $unit)` / `chartForChannel($channel, ...)` |
-| `get_outlets()` | `$client->outlets()->all()` |
-| `update_outlet(outlet, on)` | `$client->outlets()->update($outlet, on: true)` / `turnOn()` / `turnOff()` |
-| `get_chargers()` | `$client->chargers()->all()` |
-| `update_charger(charger, on, charge_rate)` | `$client->chargers()->update($charger, on: true, chargeRate: 32)` / `turnOn()` / `turnOff()` |
-| `get_vehicles()` | `$client->vehicles()->all()` |
-| `get_vehicle_status(gid)` | `$client->vehicles()->status($gid)` |
+| `EmporiaConnect::client()` / `fromTokens()` / `builder()` | Create a client |
+| `$client->downForMaintenance()` | Maintenance message, or `null` when the API is up |
+| `$client->customers()->me()` | The logged in customer |
+| `$client->devices()->all()` / `find($gid)` | Devices, including sub-devices |
+| `$client->devices()->locationProperties($gid)` / `populateLocationProperties($device)` | Location and billing settings |
+| `$client->devices()->status()` / `withConnectionStatus($devices)` | Outlets, chargers and online status |
+| `$client->channels()->all($gid)` / `find($gid, $channelNum)` | Channels of a device |
+| `$client->channels()->update($channel->withName('Oven'))` | Rename or re-type a channel |
+| `$client->channels()->types()` | Available channel types |
+| `$client->usage()->devices($gids, $instant, $scale, $unit)` | Instant usage of one or more devices |
+| `$client->usage()->chart($gid, $channelNum, $start, $end, $scale, $unit)` / `chartForChannel($channel, ...)` | Usage over a time range |
+| `$client->outlets()->all()` / `update($outlet, on: true)` / `turnOn()` / `turnOff()` | Smart plugs |
+| `$client->chargers()->all()` / `update($charger, on: true, chargeRate: 32)` / `turnOn()` / `turnOff()` | EV chargers |
+| `$client->vehicles()->all()` / `status($gid)` | Linked vehicles |
 
 ### Devices
 
 ```php
-$devices = $client->devices()->all();              // list<DeviceResponse>; sub-devices are flattened like PyEmVue
+$devices = $client->devices()->all();              // list<DeviceResponse>; sub-devices are included in the list
 
 $device = $devices[0];
 $device->deviceGid;                                // 12345
@@ -164,7 +156,7 @@ $chart->watts();
 $chart->total();
 ```
 
-Channel `1,2,3` is the mains and `Balance` is the unmonitored remainder. Like PyEmVue,
+Channel `1,2,3` is the mains and `Balance` is the unmonitored remainder.
 `usage()->devices()` retries (with back-off) while the API still returns `null` for recent data.
 
 ### Outlets and chargers
@@ -292,11 +284,6 @@ composer analyse     # PHPStan level 9
 composer format      # Laravel Pint
 composer qa          # everything
 ```
-
-## Credits
-
-- [PyEmVue](https://github.com/magico13/PyEmVue) by magico13, whose API research this package is built on
-- [pycognito](https://github.com/NabuCasa/pycognito) for the Cognito SRP implementation
 
 ## License
 

@@ -173,7 +173,7 @@ final class ClientBuilder
     }
 
     /**
-     * Start from existing tokens instead of logging in (PyEmVue: login(id_token=..., access_token=..., refresh_token=...)).
+     * Start from existing tokens instead of logging in.
      */
     public function withTokens(string $idToken, ?string $accessToken = null, ?string $refreshToken = null): self
     {
@@ -206,7 +206,7 @@ final class ClientBuilder
     }
 
     /**
-     * Store tokens in a JSON file (PyEmVue: token_storage_file).
+     * Store tokens in a JSON file.
      */
     public function withTokenFile(string $path): self
     {

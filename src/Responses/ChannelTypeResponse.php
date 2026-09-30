@@ -9,7 +9,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * A channel type (appliance category) that can be assigned to a channel (PyEmVue: ChannelType).
+ * A channel type (appliance category) that can be assigned to a channel.
  */
 final readonly class ChannelTypeResponse implements ResponseContract
 {

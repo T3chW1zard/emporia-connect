@@ -56,7 +56,7 @@ return [
     | Authentication flow
     |--------------------------------------------------------------------------
     |
-    | "srp" (Secure Remote Password, what the Emporia app and PyEmVue use) or
+    | "srp" (Secure Remote Password, what the Emporia app uses) or
     | "password" (plain USER_PASSWORD_AUTH).
     |
     */

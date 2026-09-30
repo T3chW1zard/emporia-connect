@@ -9,7 +9,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * An Emporia smart plug (PyEmVue: OutletDevice).
+ * An Emporia smart plug.
  */
 final readonly class OutletResponse implements ResponseContract
 {
@@ -44,7 +44,7 @@ final readonly class OutletResponse implements ResponseContract
     }
 
     /**
-     * Request body for PUT devices/outlet (PyEmVue: as_dictionary).
+     * Request body for PUT devices/outlet.
      *
      * @return array{deviceGid: int, outletOn: bool, loadGid: int|null}
      */

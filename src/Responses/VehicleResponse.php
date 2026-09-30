@@ -9,7 +9,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * A vehicle linked to the Emporia account (PyEmVue: Vehicle).
+ * A vehicle linked to the Emporia account.
  */
 final readonly class VehicleResponse implements ResponseContract
 {

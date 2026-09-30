@@ -9,7 +9,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Battery and charging state of a linked vehicle (PyEmVue: VehicleStatus).
+ * Battery and charging state of a linked vehicle.
  */
 final readonly class VehicleStatusResponse implements ResponseContract
 {

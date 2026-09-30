@@ -9,7 +9,7 @@ use T3chW1zard\EmporiaConnect\Contracts\TokenStoreContract;
 use T3chW1zard\EmporiaConnect\Exceptions\EmporiaException;
 
 /**
- * Stores tokens in a JSON file, the PHP equivalent of PyEmVue's token_storage_file.
+ * Stores tokens in a JSON file.
  * The file is written with 0600 permissions because it contains a refresh token.
  */
 final readonly class FileTokenStore implements TokenStoreContract

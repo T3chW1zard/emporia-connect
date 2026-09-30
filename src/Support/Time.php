@@ -18,7 +18,7 @@ final class Time
     /**
      * Normalise a user supplied date to an immutable UTC date.
      *
-     * Naive strings are interpreted as UTC, matching PyEmVue's behaviour for naive datetimes.
+     * Strings without a time zone are interpreted as UTC.
      */
     public static function toUtc(DateTimeInterface|string $value): DateTimeImmutable
     {

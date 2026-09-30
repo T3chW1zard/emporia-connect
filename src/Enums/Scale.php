@@ -6,7 +6,7 @@ namespace T3chW1zard\EmporiaConnect\Enums;
 
 /**
  * Time scale for energy usage data points.
- * Values match the Emporia Vue API (ported from PyEmVue).
+ * Values match the Emporia Vue API.
  */
 enum Scale: string
 {

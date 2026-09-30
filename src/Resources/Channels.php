@@ -41,7 +41,7 @@ final readonly class Channels
     }
 
     /**
-     * Available channel types (PyEmVue: get_channel_types).
+     * Available channel types.
      *
      * @return list<ChannelTypeResponse>
      */
@@ -51,7 +51,7 @@ final readonly class Channels
     }
 
     /**
-     * Save a channel's name, multiplier and type (PyEmVue: update_channel).
+     * Save a channel's name, multiplier and type.
      *
      * Modify the channel with its with*() methods first, e.g. $channel->withName('Oven').
      */

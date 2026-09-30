@@ -17,7 +17,7 @@ final readonly class Vehicles
     public function __construct(private TransporterContract $transporter) {}
 
     /**
-     * All linked vehicles (PyEmVue: get_vehicles).
+     * All linked vehicles.
      *
      * @return list<VehicleResponse>
      */
@@ -27,7 +27,7 @@ final readonly class Vehicles
     }
 
     /**
-     * Battery and charging state of a vehicle, or null when the API returns nothing (PyEmVue: get_vehicle_status).
+     * Battery and charging state of a vehicle, or null when the API returns nothing.
      */
     public function status(int $vehicleGid): ?VehicleStatusResponse
     {

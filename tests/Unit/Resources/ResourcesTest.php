@@ -36,7 +36,7 @@ final class ResourcesTest extends TestCase
         $this->assertTrue($this->transporter->hasSent('GET', 'customers'));
     }
 
-    public function test_devices_all_flattens_sub_devices_like_pyemvue(): void
+    public function test_devices_all_flattens_sub_devices(): void
     {
         $devices = $this->client->devices()->all();
 
@@ -169,7 +169,7 @@ final class ResourcesTest extends TestCase
         ], $this->transporter->sentTo('PUT', 'devices/evcharger')[0]['payload']);
     }
 
-    public function test_charger_rate_of_zero_is_ignored_like_pyemvue(): void
+    public function test_charger_rate_of_zero_is_ignored(): void
     {
         $charger = $this->client->chargers()->find(4567);
         $this->assertInstanceOf(ChargerResponse::class, $charger);

@@ -63,7 +63,7 @@ final class TokenSetTest extends TestCase
         $this->assertNull(TokenSet::fromCognito([], new DateTimeImmutable));
     }
 
-    public function test_array_round_trip_uses_pyemvue_keys(): void
+    public function test_array_round_trip_uses_snake_case_keys(): void
     {
         $tokens = new TokenSet('id', 'access', 'refresh', 1234);
 

@@ -11,7 +11,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * An Emporia device: Vue energy monitor, smart plug or EV charger (PyEmVue: VueDevice).
+ * An Emporia device: Vue energy monitor, smart plug or EV charger.
  */
 final readonly class DeviceResponse implements ResponseContract
 {
@@ -89,7 +89,7 @@ final readonly class DeviceResponse implements ResponseContract
     }
 
     /**
-     * Copy with location properties attached (PyEmVue: populate_device_properties).
+     * Copy with location properties attached.
      */
     public function withLocationProperties(LocationPropertiesResponse $locationProperties): self
     {
@@ -97,7 +97,7 @@ final readonly class DeviceResponse implements ResponseContract
     }
 
     /**
-     * Copy with the online status replaced (PyEmVue: get_devices_status(device_list)).
+     * Copy with the online status replaced.
      */
     public function withConnection(DeviceConnectionResponse $connection): self
     {

@@ -12,9 +12,7 @@ use T3chW1zard\EmporiaConnect\Exceptions\AuthenticationException;
 /**
  * AWS Cognito Secure Remote Password (USER_SRP_AUTH) helper.
  *
- * A direct port of pycognito's aws_srp.AWSSRP, which PyEmVue uses to log in.
- *
- * @see https://github.com/NabuCasa/pycognito/blob/master/pycognito/aws_srp.py
+ * Implements the same SRP-6a variant as AWS's amazon-cognito-identity-js AuthenticationHelper.
  */
 final readonly class Srp
 {

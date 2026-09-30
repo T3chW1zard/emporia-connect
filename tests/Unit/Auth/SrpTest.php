@@ -14,7 +14,7 @@ use T3chW1zard\EmporiaConnect\Tests\TestCase;
 final class SrpTest extends TestCase
 {
     /**
-     * Known-answer vector generated with pycognito's aws_srp.AWSSRP (the code PyEmVue uses),
+     * Known-answer vector from an independent reference implementation of Cognito SRP,
      * with a fixed private value "a", server value B = 7^123456789 mod N and a salt starting with "f".
      */
     private const LARGE_A_PREFIX = '5cb967af6ec0aa592e56e77f603b2a2fca70ddb04ded61500a730d8cd535a9d2';
@@ -26,7 +26,7 @@ final class SrpTest extends TestCase
         return str_repeat('ab', 128);
     }
 
-    public function test_large_a_matches_pycognito(): void
+    public function test_large_a_matches_reference_vector(): void
     {
         $srp = new Srp('ghlOXVLi1', $this->smallA());
 
@@ -34,7 +34,7 @@ final class SrpTest extends TestCase
         $this->assertSame(768, strlen($srp->largeAHex()));
     }
 
-    public function test_password_claim_signature_matches_pycognito(): void
+    public function test_password_claim_signature_matches_reference_vector(): void
     {
         $srp = new Srp('ghlOXVLi1', $this->smallA());
 

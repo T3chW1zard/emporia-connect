@@ -28,7 +28,7 @@ final class UsageTest extends TestCase
         $this->usage = new Usage($this->transporter, new FrozenClock('2024-06-01T12:00:00Z'));
     }
 
-    public function test_device_list_usage_builds_pyemvue_uri(): void
+    public function test_device_list_usage_builds_uri(): void
     {
         $this->usage->devices([2345, 3456], scale: Scale::MINUTE);
 
@@ -104,7 +104,7 @@ final class UsageTest extends TestCase
         $this->assertCount(3, $this->transporter->sent());
     }
 
-    public function test_chart_usage_builds_pyemvue_uri(): void
+    public function test_chart_usage_builds_uri(): void
     {
         $this->usage->chart(2345, '1,2,3', '2024-05-01T00:00:00Z', '2024-06-01T00:00:00Z', Scale::HOUR, Unit::KILOWATT_HOURS);
 

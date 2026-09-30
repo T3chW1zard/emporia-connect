@@ -12,7 +12,7 @@ use T3chW1zard\EmporiaConnect\Exceptions\AuthenticationException;
 use T3chW1zard\EmporiaConnect\Support\SystemClock;
 
 /**
- * Keeps a valid token set available, mirroring PyEmVue's Auth class:
+ * Keeps a valid token set available:
  *
  *  1. use tokens from the store (cache) when present,
  *  2. refresh them with the refresh token when the id token expired,

@@ -87,7 +87,7 @@ final class ResponsesTest extends TestCase
         $this->assertNull($empty->locationInformation);
     }
 
-    public function test_outlet_payload_matches_pyemvue(): void
+    public function test_outlet_payload(): void
     {
         $outlet = OutletResponse::from(Fixtures::outlet())->withOutletOn(true);
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace T3chW1zard\EmporiaConnect\Testing;
 
 /**
- * Realistic Emporia API response bodies, taken from PyEmVue's API documentation and simulator.
+ * Realistic Emporia API response bodies.
  */
 final class Fixtures
 {

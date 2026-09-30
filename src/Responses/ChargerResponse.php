@@ -9,7 +9,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * An Emporia EV charger / EVSE (PyEmVue: ChargerDevice).
+ * An Emporia EV charger / EVSE.
  */
 final readonly class ChargerResponse implements ResponseContract
 {
@@ -72,7 +72,7 @@ final readonly class ChargerResponse implements ResponseContract
     }
 
     /**
-     * Request body for PUT devices/evcharger (PyEmVue: as_dictionary).
+     * Request body for PUT devices/evcharger.
      *
      * @return array<string, mixed>
      */

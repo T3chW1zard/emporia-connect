@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace T3chW1zard\EmporiaConnect\Enums;
 
 /**
- * Energy unit accepted by the Emporia Vue API (ported from PyEmVue).
+ * Energy unit accepted by the Emporia Vue API.
  */
 enum Unit: string
 {

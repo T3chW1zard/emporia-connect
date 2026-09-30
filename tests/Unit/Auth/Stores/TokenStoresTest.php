@@ -69,7 +69,7 @@ final class TokenStoresTest extends TestCase
         $this->assertIsArray($cache->get('my-key'));
     }
 
-    public function test_file_store_writes_private_json_in_pyemvue_format(): void
+    public function test_file_store_writes_private_json(): void
     {
         $path = self::$directory.'/tokens.json';
         $store = new FileTokenStore($path);

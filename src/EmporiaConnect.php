@@ -35,7 +35,7 @@ final class EmporiaConnect
     }
 
     /**
-     * Client that starts from previously obtained tokens (PyEmVue: login with id/access/refresh tokens).
+     * Client that starts from previously obtained tokens.
      */
     public static function fromTokens(
         string $idToken,

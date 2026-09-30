@@ -17,8 +17,7 @@ use T3chW1zard\EmporiaConnect\Support\SystemClock;
 /**
  * Minimal AWS Cognito Identity Provider client for the Emporia user pool.
  *
- * Supports logging in (SRP or plain password) and refreshing tokens with a refresh token,
- * which is everything PyEmVue needs from pycognito.
+ * Supports logging in (SRP or plain password) and refreshing tokens with a refresh token.
  */
 final readonly class CognitoClient
 {

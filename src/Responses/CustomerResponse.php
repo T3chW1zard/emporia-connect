@@ -11,7 +11,7 @@ use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * The Emporia customer account (PyEmVue: Customer).
+ * The Emporia customer account.
  */
 final readonly class CustomerResponse implements ResponseContract
 {

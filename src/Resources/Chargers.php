@@ -16,7 +16,7 @@ final readonly class Chargers
     public function __construct(private TransporterContract $transporter) {}
 
     /**
-     * All EV chargers on the account (PyEmVue: get_chargers).
+     * All EV chargers on the account.
      *
      * @return list<ChargerResponse>
      */
@@ -38,7 +38,7 @@ final readonly class Chargers
 
     /**
      * Save the charger state, optionally switching it on/off and changing the charge rate
-     * in amps first (PyEmVue: update_charger). A charge rate of 0 is ignored, as in PyEmVue.
+     * in amps first. A charge rate of 0 is ignored.
      */
     public function update(ChargerResponse $charger, ?bool $on = null, ?int $chargeRate = null): ChargerResponse
     {

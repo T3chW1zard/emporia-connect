@@ -16,7 +16,7 @@ final readonly class Outlets
     public function __construct(private TransporterContract $transporter) {}
 
     /**
-     * All smart plugs on the account (PyEmVue: get_outlets).
+     * All smart plugs on the account.
      *
      * @return list<OutletResponse>
      */
@@ -37,7 +37,7 @@ final readonly class Outlets
     }
 
     /**
-     * Save the outlet state, optionally switching it on/off first (PyEmVue: update_outlet).
+     * Save the outlet state, optionally switching it on/off first.
      */
     public function update(OutletResponse $outlet, ?bool $on = null): OutletResponse
     {

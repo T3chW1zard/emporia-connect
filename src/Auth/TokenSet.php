@@ -103,7 +103,7 @@ final readonly class TokenSet implements JsonSerializable
     }
 
     /**
-     * Same keys as PyEmVue's token storage file.
+     * Array form used by the token stores.
      *
      * @return array{id_token: string, access_token: string|null, refresh_token: string|null, expires_at: int|null}
      */

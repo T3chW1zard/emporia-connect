@@ -15,7 +15,7 @@ final readonly class Customers
     public function __construct(private TransporterContract $transporter) {}
 
     /**
-     * Details of the logged in customer (PyEmVue: get_customer_details).
+     * Details of the logged in customer.
      */
     public function me(): CustomerResponse
     {

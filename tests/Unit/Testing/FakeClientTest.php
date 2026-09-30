@@ -4,87 +4,63 @@ declare(strict_types=1);
 
 namespace T3chW1zard\EmporiaConnect\Tests\Unit\Testing;
 
-use T3chW1zard\EmporiaConnect\Enums\Scale;
-use T3chW1zard\EmporiaConnect\Enums\Unit;
-use T3chW1zard\EmporiaConnect\Responses\DeviceResponse;
+use T3chW1zard\EmporiaConnect\Contracts\ClientContract;
 use T3chW1zard\EmporiaConnect\Testing\FakeClient;
 use T3chW1zard\EmporiaConnect\Tests\TestCase;
 
 final class FakeClientTest extends TestCase
 {
-    private FakeClient $client;
-
-    protected function setUp(): void
+    public function test_implements_client_contract_with_realistic_defaults(): void
     {
-        $this->client = new FakeClient;
+        $fake = new FakeClient;
+
+        $this->assertInstanceOf(ClientContract::class, $fake);
+        $this->assertSame(1234, $fake->customers()->me()->customerGid);
+        $this->assertCount(4, $fake->devices()->all());
+        $this->assertCount(3, $fake->channels()->types());
+        $this->assertCount(1, $fake->outlets()->all());
+        $this->assertCount(1, $fake->chargers()->all());
+        $this->assertCount(1, $fake->vehicles()->all());
+        $this->assertArrayHasKey(2345, $fake->usage()->devices(2345));
+        $this->assertCount(4, $fake->usage()->chart(2345, '1')->usage);
+        $this->assertNull($fake->downForMaintenance());
     }
 
-    public function test_customers_me_returns_customer_response(): void
+    public function test_responses_can_be_overridden(): void
     {
-        $customer = $this->client->customers()->me();
+        $fake = new FakeClient([
+            'GET customers' => ['customerGid' => 99, 'email' => 'override@example.com'],
+            'GET customers/vehicles' => static fn (): array => [],
+        ]);
 
-        $this->assertSame(1, $customer->customerGid);
-        $this->assertSame('fake@example.com', $customer->email);
+        $this->assertSame(99, $fake->customers()->me()->customerGid);
+        $this->assertSame([], $fake->vehicles()->all());
     }
 
-    public function test_devices_all_returns_array_of_devices(): void
+    public function test_records_requests(): void
     {
-        $devices = $this->client->devices()->all();
+        $fake = new FakeClient;
+        $fake->outlets()->turnOn($fake->outlets()->all()[0]);
 
-        $this->assertCount(1, $devices);
-        $this->assertSame(1, $devices[0]->deviceGid);
+        $this->assertTrue($fake->transporter()->hasSent('PUT', 'devices/outlet'));
+        $this->assertFalse($fake->transporter()->hasSent('PUT', 'devices/evcharger'));
+        $this->assertSame(['deviceGid' => 3456, 'outletOn' => true, 'loadGid' => 5678], $fake->transporter()->sentTo('put', 'devices/outlet')[0]['payload']);
+        $this->assertCount(2, $fake->transporter()->sent());
     }
 
-    public function test_devices_find_returns_device(): void
+    public function test_unknown_routes_return_empty_responses(): void
     {
-        $device = $this->client->devices()->find(1);
+        $fake = new FakeClient;
 
-        $this->assertInstanceOf(DeviceResponse::class, $device);
-        $this->assertSame(1, $device->deviceGid);
+        $this->assertSame([], $fake->transporter()->get('unknown/endpoint'));
     }
 
-    public function test_channels_all_returns_channels(): void
+    public function test_maintenance_message(): void
     {
-        $channels = $this->client->channels()->all(1, Scale::HOUR);
+        $fake = new FakeClient(maintenanceMessage: 'down');
+        $this->assertSame('down', $fake->downForMaintenance());
 
-        $this->assertCount(1, $channels);
-        $this->assertSame('1', $channels[0]->channelNum);
-    }
-
-    public function test_channels_usage_returns_usage_response(): void
-    {
-        $usage = $this->client->channels()->usage(1, '1', Scale::HOUR, Unit::KILOWATT_HOURS);
-
-        $this->assertCount(3, $usage->usage);
-    }
-
-    public function test_outlets_all_returns_outlets(): void
-    {
-        $outlets = $this->client->outlets()->all();
-
-        $this->assertCount(1, $outlets);
-        $this->assertFalse($outlets[0]->outletOn);
-    }
-
-    public function test_outlets_update_returns_outlet(): void
-    {
-        $outlet = $this->client->outlets()->update(10, true);
-
-        $this->assertTrue($outlet->outletOn);
-    }
-
-    public function test_chargers_all_returns_chargers(): void
-    {
-        $chargers = $this->client->chargers()->all();
-
-        $this->assertCount(1, $chargers);
-        $this->assertFalse($chargers[0]->chargerOn);
-    }
-
-    public function test_chargers_update_returns_charger(): void
-    {
-        $charger = $this->client->chargers()->update(20, true);
-
-        $this->assertTrue($charger->chargerOn);
+        $fake->setMaintenanceMessage(null);
+        $this->assertNull($fake->downForMaintenance());
     }
 }

@@ -6,31 +6,57 @@ namespace T3chW1zard\EmporiaConnect\Resources;
 
 use T3chW1zard\EmporiaConnect\Contracts\TransporterContract;
 use T3chW1zard\EmporiaConnect\Responses\OutletResponse;
+use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Outlet resource — list and toggle.
+ * Emporia smart plugs.
  */
 final readonly class Outlets
 {
     public function __construct(private TransporterContract $transporter) {}
 
-    /** @return OutletResponse[] */
+    /**
+     * All smart plugs on the account (PyEmVue: get_outlets).
+     *
+     * @return list<OutletResponse>
+     */
     public function all(): array
     {
-        $data = $this->transporter->get('customers/devices/status');
-        /** @var array<int, array<string, mixed>> $items */
-        $items = is_array($data['outlets'] ?? null) ? $data['outlets'] : [];
-
-        return array_map(OutletResponse::from(...), $items);
+        return array_map(OutletResponse::from(...), DataExtractor::objects($this->transporter->get('customers/devices/status'), 'outlets'));
     }
 
-    public function update(int $deviceGid, bool $on): OutletResponse
+    public function find(int $deviceGid): ?OutletResponse
     {
-        $data = $this->transporter->put('devices/outlet', [
-            'deviceGid' => $deviceGid,
-            'outlet' => ['outletOn' => $on],
-        ]);
+        foreach ($this->all() as $outlet) {
+            if ($outlet->deviceGid === $deviceGid) {
+                return $outlet;
+            }
+        }
 
-        return OutletResponse::from($data);
+        return null;
+    }
+
+    /**
+     * Save the outlet state, optionally switching it on/off first (PyEmVue: update_outlet).
+     */
+    public function update(OutletResponse $outlet, ?bool $on = null): OutletResponse
+    {
+        if ($on !== null) {
+            $outlet = $outlet->withOutletOn($on);
+        }
+
+        $data = $this->transporter->put('devices/outlet', $outlet->toPayload());
+
+        return $data === [] ? $outlet : OutletResponse::from($data);
+    }
+
+    public function turnOn(OutletResponse $outlet): OutletResponse
+    {
+        return $this->update($outlet, true);
+    }
+
+    public function turnOff(OutletResponse $outlet): OutletResponse
+    {
+        return $this->update($outlet, false);
     }
 }

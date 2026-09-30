@@ -4,67 +4,79 @@ declare(strict_types=1);
 
 namespace T3chW1zard\EmporiaConnect\Responses;
 
-use T3chW1zard\EmporiaConnect\Enums\Scale;
-use T3chW1zard\EmporiaConnect\Enums\Unit;
-use T3chW1zard\EmporiaConnect\Support\Converter;
+use T3chW1zard\EmporiaConnect\Contracts\ResponseContract;
+use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Represents a channel on an Emporia device with current usage.
+ * A measuring channel of a device (PyEmVue: VueDeviceChannel).
+ *
+ * The channel number is used by the usage endpoints; "1,2,3" is the mains, "Balance" the unmonitored remainder.
  */
-readonly class DeviceChannelResponse
+final readonly class DeviceChannelResponse implements ResponseContract
 {
+    use SerializesToJson;
+
     public function __construct(
         public int $deviceGid,
+        public ?string $name,
         public string $channelNum,
-        public string $name,
-        public float $currentUsage,
-        public Unit $unit,
-        public Scale $scale,
-        public ?float $percentage,
-        public ?int $channelTypeGid,
+        public float $channelMultiplier = 1.0,
+        public ?int $channelTypeGid = null,
+        /** Known types: Main, FiftyAmp, FiftyAmpBidirectional. */
+        public ?string $type = null,
+        public ?string $parentChannelNum = null,
     ) {}
 
-    /** @param array<string, mixed> $data */
-    public static function from(array $data, Unit $unit, Scale $scale): self
+    /** @param array<array-key, mixed> $data */
+    public static function from(array $data): self
     {
-        $shouldConvert = $unit === Unit::KILOWATT_HOURS
-            && in_array($scale, [Scale::SECOND, Scale::MINUTE], true);
-
-        $rawUsage = DataExtractor::float($data, 'usage');
-        $usage = (float) Converter::toPreciseFloat($rawUsage, 3);
-
-        if ($shouldConvert) {
-            $usage = Converter::toWatts($usage, $scale);
-        }
-
-        $rawPercentage = DataExtractor::nullableFloat($data, 'percentage');
-        $percentage = $rawPercentage !== null ? (float) Converter::toPreciseFloat($rawPercentage, 0) : null;
-
         return new self(
             deviceGid: DataExtractor::int($data, 'deviceGid'),
-            channelNum: DataExtractor::string($data, 'channelNum'),
-            name: DataExtractor::string($data, 'name'),
-            currentUsage: $usage,
-            unit: $unit,
-            scale: $scale,
-            percentage: $percentage,
+            name: DataExtractor::nullableString($data, 'name'),
+            channelNum: DataExtractor::string($data, 'channelNum', '1,2,3'),
+            channelMultiplier: DataExtractor::float($data, 'channelMultiplier', 1.0),
             channelTypeGid: DataExtractor::nullableInt($data, 'channelTypeGid'),
+            type: DataExtractor::nullableString($data, 'type'),
+            parentChannelNum: DataExtractor::nullableString($data, 'parentChannelNum'),
         );
     }
 
-    /** @return array<string, mixed> */
+    public function withName(?string $name): self
+    {
+        return new self($this->deviceGid, $name, $this->channelNum, $this->channelMultiplier, $this->channelTypeGid, $this->type, $this->parentChannelNum);
+    }
+
+    public function withChannelMultiplier(float $channelMultiplier): self
+    {
+        return new self($this->deviceGid, $this->name, $this->channelNum, $channelMultiplier, $this->channelTypeGid, $this->type, $this->parentChannelNum);
+    }
+
+    public function withChannelTypeGid(?int $channelTypeGid): self
+    {
+        return new self($this->deviceGid, $this->name, $this->channelNum, $this->channelMultiplier, $channelTypeGid, $this->type, $this->parentChannelNum);
+    }
+
+    /**
+     * Request body for updating the channel (PyEmVue: as_dictionary).
+     *
+     * @return array<string, mixed>
+     */
+    public function toPayload(): array
+    {
+        return $this->toArray();
+    }
+
     public function toArray(): array
     {
         return [
             'deviceGid' => $this->deviceGid,
-            'channelNum' => $this->channelNum,
             'name' => $this->name,
-            'currentUsage' => $this->currentUsage,
-            'unit' => $this->unit->value,
-            'scale' => $this->scale->value,
-            'percentage' => $this->percentage,
+            'channelNum' => $this->channelNum,
+            'channelMultiplier' => $this->channelMultiplier,
             'channelTypeGid' => $this->channelTypeGid,
+            'type' => $this->type,
+            'parentChannelNum' => $this->parentChannelNum,
         ];
     }
 }

@@ -6,36 +6,62 @@ namespace T3chW1zard\EmporiaConnect\Resources;
 
 use T3chW1zard\EmporiaConnect\Contracts\TransporterContract;
 use T3chW1zard\EmporiaConnect\Responses\ChargerResponse;
+use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * EV charger resource — list and control.
+ * Emporia EV chargers.
  */
 final readonly class Chargers
 {
     public function __construct(private TransporterContract $transporter) {}
 
-    /** @return ChargerResponse[] */
+    /**
+     * All EV chargers on the account (PyEmVue: get_chargers).
+     *
+     * @return list<ChargerResponse>
+     */
     public function all(): array
     {
-        $data = $this->transporter->get('customers/devices/status');
-        /** @var array<int, array<string, mixed>> $items */
-        $items = is_array($data['evChargers'] ?? null) ? $data['evChargers'] : [];
-
-        return array_map(ChargerResponse::from(...), $items);
+        return array_map(ChargerResponse::from(...), DataExtractor::objects($this->transporter->get('customers/devices/status'), 'evChargers'));
     }
 
-    public function update(int $deviceGid, bool $on, ?float $chargeRate = null): ChargerResponse
+    public function find(int $deviceGid): ?ChargerResponse
     {
-        $evPayload = ['chargerOn' => $on];
-        if ($chargeRate !== null) {
-            $evPayload['chargingRate'] = $chargeRate;
+        foreach ($this->all() as $charger) {
+            if ($charger->deviceGid === $deviceGid) {
+                return $charger;
+            }
         }
 
-        $data = $this->transporter->put('devices/evcharger', [
-            'deviceGid' => $deviceGid,
-            'evCharger' => $evPayload,
-        ]);
+        return null;
+    }
 
-        return ChargerResponse::from($data);
+    /**
+     * Save the charger state, optionally switching it on/off and changing the charge rate
+     * in amps first (PyEmVue: update_charger). A charge rate of 0 is ignored, as in PyEmVue.
+     */
+    public function update(ChargerResponse $charger, ?bool $on = null, ?int $chargeRate = null): ChargerResponse
+    {
+        if ($on !== null) {
+            $charger = $charger->withChargerOn($on);
+        }
+
+        if ($chargeRate !== null && $chargeRate > 0) {
+            $charger = $charger->withChargingRate($chargeRate);
+        }
+
+        $data = $this->transporter->put('devices/evcharger', $charger->toPayload());
+
+        return $data === [] ? $charger : ChargerResponse::from($data);
+    }
+
+    public function turnOn(ChargerResponse $charger): ChargerResponse
+    {
+        return $this->update($charger, true);
+    }
+
+    public function turnOff(ChargerResponse $charger): ChargerResponse
+    {
+        return $this->update($charger, false);
     }
 }

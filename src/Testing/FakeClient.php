@@ -4,133 +4,103 @@ declare(strict_types=1);
 
 namespace T3chW1zard\EmporiaConnect\Testing;
 
+use Closure;
+use DateTimeImmutable;
+use DateTimeZone;
+use Psr\Clock\ClockInterface;
+use T3chW1zard\EmporiaConnect\Client;
 use T3chW1zard\EmporiaConnect\Contracts\ClientContract;
-use T3chW1zard\EmporiaConnect\Contracts\TransporterContract;
 use T3chW1zard\EmporiaConnect\Resources\Channels;
 use T3chW1zard\EmporiaConnect\Resources\Chargers;
 use T3chW1zard\EmporiaConnect\Resources\Customers;
 use T3chW1zard\EmporiaConnect\Resources\Devices;
 use T3chW1zard\EmporiaConnect\Resources\Outlets;
+use T3chW1zard\EmporiaConnect\Resources\Usage;
+use T3chW1zard\EmporiaConnect\Resources\Vehicles;
 
 /**
- * In-memory fake client for use in consumer tests.
- * Returns predictable fixture data matching the real API shapes.
+ * Drop-in replacement for the real client in your tests. Never touches the network.
  *
- * Usage in consumer tests:
- *   $client = new FakeClient();
- *   $customer = $client->customers()->me();
+ *   $fake = new FakeClient(['GET customers' => ['customerGid' => 1, 'email' => 'me@example.com']]);
+ *   $fake->customers()->me();
+ *   $fake->transporter()->hasSent('GET', 'customers'); // true
  */
-final class FakeClient implements ClientContract, TransporterContract
+final class FakeClient implements ClientContract
 {
-    public function get(string $uri): array
-    {
-        return match (true) {
-            str_starts_with($uri, 'customers/devices/status') => $this->deviceStatusFixture(),
-            str_starts_with($uri, 'customers/devices') => $this->devicesFixture(),
-            str_starts_with($uri, 'customers/vehicles') => ['vehicles' => []],
-            str_starts_with($uri, 'customers') => $this->customerFixture(),
-            str_starts_with($uri, 'vehicles/v2/settings') => $this->vehicleStatusFixture(),
-            str_starts_with($uri, 'AppAPI?apiMethod=getDeviceListUsages') => $this->channelListFixture(),
-            str_starts_with($uri, 'AppAPI?apiMethod=getChartUsage') => $this->chartUsageFixture(),
-            str_starts_with($uri, 'devices/channels/channeltypes') => ['channelTypes' => []],
-            default => [],
-        };
+    private readonly FakeTransporter $transporter;
+
+    private readonly Client $client;
+
+    /**
+     * @param  array<string, array<array-key, mixed>|Closure(string, array<string, mixed>|null): array<array-key, mixed>>  $responses  route overrides, see {@see FakeTransporter}
+     */
+    public function __construct(
+        array $responses = [],
+        private ?string $maintenanceMessage = null,
+        ?ClockInterface $clock = null,
+    ) {
+        $this->transporter = new FakeTransporter($responses);
+        $this->client = new Client($this->transporter, clock: $clock ?? $this->frozenClock());
     }
 
-    public function put(string $uri, array $payload): array
+    public function transporter(): FakeTransporter
     {
-        return match (true) {
-            str_starts_with($uri, 'devices/outlet') => $this->outletFixture(true),
-            str_starts_with($uri, 'devices/evcharger') => $this->chargerFixture(true),
-            default => [],
-        };
+        return $this->transporter;
     }
 
     public function customers(): Customers
     {
-        return new Customers($this);
+        return $this->client->customers();
     }
 
     public function devices(): Devices
     {
-        return new Devices($this);
+        return $this->client->devices();
     }
 
     public function channels(): Channels
     {
-        return new Channels($this);
+        return $this->client->channels();
+    }
+
+    public function usage(): Usage
+    {
+        return $this->client->usage();
     }
 
     public function outlets(): Outlets
     {
-        return new Outlets($this);
+        return $this->client->outlets();
     }
 
     public function chargers(): Chargers
     {
-        return new Chargers($this);
+        return $this->client->chargers();
     }
 
-    /** @return array<string, mixed> */
-    private function customerFixture(): array
+    public function vehicles(): Vehicles
     {
-        return ['customerGid' => 1, 'email' => 'fake@example.com', 'firstName' => 'Fake', 'lastName' => 'User', 'createdAt' => '2024-01-01T00:00:00Z'];
+        return $this->client->vehicles();
     }
 
-    /** @return array<string, mixed> */
-    private function devicesFixture(): array
+    public function downForMaintenance(): ?string
     {
-        return ['devices' => [[
-            'deviceGid' => 1, 'manufacturerDeviceId' => 'FAKE001', 'model' => 'Vue002',
-            'firmware' => '1.7', 'parentDeviceGid' => null, 'parentChannelNum' => null,
-            'deviceConnected' => ['connected' => true, 'offlineSince' => null],
-            'devices' => [['channels' => [['channelNum' => '1'], ['channelNum' => '2']]]],
-        ]]];
+        return $this->maintenanceMessage;
     }
 
-    /** @return array<string, mixed> */
-    private function deviceStatusFixture(): array
+    public function setMaintenanceMessage(?string $message): void
     {
-        return ['outlets' => [$this->outletFixture(false)], 'evChargers' => [$this->chargerFixture(false)]];
+        $this->maintenanceMessage = $message;
     }
 
-    /** @return array<string, mixed> */
-    private function outletFixture(bool $on): array
+    private function frozenClock(): ClockInterface
     {
-        return ['deviceGid' => 10, 'outlet' => ['outletOn' => $on, 'loadGid' => null, 'schedules' => []]];
-    }
-
-    /** @return array<string, mixed> */
-    private function chargerFixture(bool $on): array
-    {
-        return ['deviceGid' => 20, 'evCharger' => ['chargerOn' => $on, 'offPeakSchedulesEnabled' => false]];
-    }
-
-    /** @return array<string, mixed> */
-    private function channelListFixture(): array
-    {
-        return ['deviceListUsages' => ['devices' => [['channelUsages' => [
-            ['deviceGid' => 1, 'channelNum' => '1', 'name' => 'Main', 'usage' => 0.001, 'percentage' => 100.0, 'channelTypeGid' => null],
-        ]]]]];
-    }
-
-    /** @return array<string, mixed> */
-    private function chartUsageFixture(): array
-    {
-        return ['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001, 0.002, 0.003]];
-    }
-
-    /** @return array<string, mixed> */
-    private function vehicleStatusFixture(): array
-    {
-        return [
-            'vehicleGid' => 1,
-            'vehicleState' => 'online',
-            'batteryLevel' => 80.0,
-            'batteryRange' => 200.0,
-            'chargingState' => 'Disconnected',
-            'chargeLimitPercent' => 90.0,
-            'minutesToFullCharge' => 0,
-        ];
+        return new class implements ClockInterface
+        {
+            public function now(): DateTimeImmutable
+            {
+                return new DateTimeImmutable('2024-06-01T12:00:00Z', new DateTimeZone('UTC'));
+            }
+        };
     }
 }

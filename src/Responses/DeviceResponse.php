@@ -5,95 +5,105 @@ declare(strict_types=1);
 namespace T3chW1zard\EmporiaConnect\Responses;
 
 use DateTimeImmutable;
-use Exception;
-use T3chW1zard\EmporiaConnect\Exceptions\EmporiaException;
+use DateTimeInterface;
+use T3chW1zard\EmporiaConnect\Contracts\ResponseContract;
+use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Represents an Emporia Vue device (e.g. Vue 2 energy monitor).
+ * An Emporia device: Vue energy monitor, smart plug or EV charger (PyEmVue: VueDevice).
  */
-readonly class DeviceResponse
+final readonly class DeviceResponse implements ResponseContract
 {
+    use SerializesToJson;
+
     public function __construct(
         public int $deviceGid,
         public string $manufacturerDeviceId,
         public string $model,
-        public string $firmware,
-        public ?int $parentDeviceGid,
-        public ?string $parentChannelNum,
-        public bool $isConnected,
-        public ?DateTimeImmutable $offlineSince,
-        /** @var string[] */
-        public array $channels,
-        public ?string $deviceName,
-        public ?string $displayName,
-        public ?string $zipCode,
-        public ?string $timeZone,
-        public ?float $latitude,
-        public ?float $longitude,
+        public ?string $firmware,
+        public ?int $parentDeviceGid = null,
+        public ?string $parentChannelNum = null,
+        /** @var list<DeviceChannelResponse> */
+        public array $channels = [],
+        public ?OutletResponse $outlet = null,
+        public ?ChargerResponse $evCharger = null,
+        public bool $connected = false,
+        public ?DateTimeImmutable $offlineSince = null,
+        public ?LocationPropertiesResponse $locationProperties = null,
     ) {}
 
-    /** @param array<string, mixed> $data */
+    /** @param array<array-key, mixed> $data */
     public static function from(array $data): self
     {
-        /** @var array<string, mixed> $connected */
-        $connected = DataExtractor::array($data, 'deviceConnected');
-        $offlineSince = null;
-
-        $rawOffline = DataExtractor::nullableString($connected, 'offlineSince');
-        if ($rawOffline !== null) {
-            $raw = (string) preg_replace('/^since /i', '', $rawOffline);
-            try {
-                $offlineSince = new DateTimeImmutable($raw);
-            } catch (Exception $e) {
-                throw new EmporiaException("Invalid offlineSince date '{$raw}': ".$e->getMessage(), $e->getCode(), previous: $e);
-            }
-        }
-
-        $channels = [];
-        /** @var array<int, mixed> $subDevices */
-        $subDevices = DataExtractor::array($data, 'devices');
-
-        foreach ($subDevices as $subDevice) {
-            if (! is_array($subDevice)) {
-                continue;
-            }
-            /** @var array<string, mixed> $typedDevice */
-            $typedDevice = $subDevice;
-
-            foreach (DataExtractor::array($typedDevice, 'channels') as $ch) {
-                if (! is_array($ch)) {
-                    continue;
-                }
-                /** @var array<string, mixed> $typedChannel */
-                $typedChannel = $ch;
-                $channels[] = DataExtractor::string($typedChannel, 'channelNum');
-            }
-        }
-
-        /** @var array<string, mixed> $locationProperties */
-        $locationProperties = DataExtractor::array($data, 'locationProperties');
+        $connection = DataExtractor::object($data, 'deviceConnected') ?? [];
+        $outlet = DataExtractor::object($data, 'outlet');
+        $charger = DataExtractor::object($data, 'evCharger');
+        $location = DataExtractor::object($data, 'locationProperties');
 
         return new self(
             deviceGid: DataExtractor::int($data, 'deviceGid'),
             manufacturerDeviceId: DataExtractor::string($data, 'manufacturerDeviceId'),
             model: DataExtractor::string($data, 'model'),
-            firmware: DataExtractor::string($data, 'firmware'),
+            firmware: DataExtractor::nullableString($data, 'firmware'),
             parentDeviceGid: DataExtractor::nullableInt($data, 'parentDeviceGid'),
             parentChannelNum: DataExtractor::nullableString($data, 'parentChannelNum'),
-            isConnected: DataExtractor::bool($connected, 'connected'),
-            offlineSince: $offlineSince,
-            channels: $channels,
-            deviceName: DataExtractor::nullableString($data, 'deviceName'),
-            displayName: DataExtractor::nullableString($data, 'displayName'),
-            zipCode: DataExtractor::nullableString($locationProperties, 'zipCode'),
-            timeZone: DataExtractor::nullableString($locationProperties, 'timeZone'),
-            latitude: DataExtractor::nullableFloat($locationProperties, 'latitude'),
-            longitude: DataExtractor::nullableFloat($locationProperties, 'longitude'),
+            channels: array_map(DeviceChannelResponse::from(...), DataExtractor::objects($data, 'channels')),
+            outlet: $outlet === null ? null : OutletResponse::from($outlet),
+            evCharger: $charger === null ? null : ChargerResponse::from($charger),
+            connected: DataExtractor::bool($connection, 'connected'),
+            offlineSince: DataExtractor::nullableDate($connection, 'offlineSince'),
+            locationProperties: $location === null ? null : LocationPropertiesResponse::from($location),
         );
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Name shown in the Emporia app.
+     */
+    public function name(): ?string
+    {
+        $properties = $this->locationProperties;
+
+        return $properties instanceof LocationPropertiesResponse ? ($properties->displayName ?? $properties->deviceName) : null;
+    }
+
+    public function channel(string $channelNum): ?DeviceChannelResponse
+    {
+        foreach ($this->channels as $channel) {
+            if ($channel->channelNum === $channelNum) {
+                return $channel;
+            }
+        }
+
+        return null;
+    }
+
+    public function isOutlet(): bool
+    {
+        return $this->outlet instanceof OutletResponse;
+    }
+
+    public function isCharger(): bool
+    {
+        return $this->evCharger instanceof ChargerResponse;
+    }
+
+    /**
+     * Copy with location properties attached (PyEmVue: populate_device_properties).
+     */
+    public function withLocationProperties(LocationPropertiesResponse $locationProperties): self
+    {
+        return $this->copy(locationProperties: $locationProperties);
+    }
+
+    /**
+     * Copy with the online status replaced (PyEmVue: get_devices_status(device_list)).
+     */
+    public function withConnection(DeviceConnectionResponse $connection): self
+    {
+        return $this->copy(connection: $connection);
+    }
+
     public function toArray(): array
     {
         return [
@@ -103,15 +113,30 @@ readonly class DeviceResponse
             'firmware' => $this->firmware,
             'parentDeviceGid' => $this->parentDeviceGid,
             'parentChannelNum' => $this->parentChannelNum,
-            'isConnected' => $this->isConnected,
-            'offlineSince' => $this->offlineSince?->format(DateTimeImmutable::ATOM),
-            'channels' => $this->channels,
-            'deviceName' => $this->deviceName,
-            'displayName' => $this->displayName,
-            'zipCode' => $this->zipCode,
-            'timeZone' => $this->timeZone,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
+            'channels' => array_map(static fn (DeviceChannelResponse $c): array => $c->toArray(), $this->channels),
+            'outlet' => $this->outlet?->toArray(),
+            'evCharger' => $this->evCharger?->toArray(),
+            'connected' => $this->connected,
+            'offlineSince' => $this->offlineSince?->format(DateTimeInterface::ATOM),
+            'locationProperties' => $this->locationProperties?->toArray(),
         ];
+    }
+
+    private function copy(?LocationPropertiesResponse $locationProperties = null, ?DeviceConnectionResponse $connection = null): self
+    {
+        return new self(
+            deviceGid: $this->deviceGid,
+            manufacturerDeviceId: $this->manufacturerDeviceId,
+            model: $this->model,
+            firmware: $this->firmware,
+            parentDeviceGid: $this->parentDeviceGid,
+            parentChannelNum: $this->parentChannelNum,
+            channels: $this->channels,
+            outlet: $this->outlet,
+            evCharger: $this->evCharger,
+            connected: $connection instanceof DeviceConnectionResponse ? $connection->connected : $this->connected,
+            offlineSince: $connection instanceof DeviceConnectionResponse ? $connection->offlineSince : $this->offlineSince,
+            locationProperties: $locationProperties ?? $this->locationProperties,
+        );
     }
 }

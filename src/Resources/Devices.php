@@ -7,22 +7,34 @@ namespace T3chW1zard\EmporiaConnect\Resources;
 use T3chW1zard\EmporiaConnect\Contracts\TransporterContract;
 use T3chW1zard\EmporiaConnect\Responses\DeviceResponse;
 use T3chW1zard\EmporiaConnect\Responses\DeviceStatusResponse;
+use T3chW1zard\EmporiaConnect\Responses\LocationPropertiesResponse;
+use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Device resource — list, find, status, and location properties.
+ * Devices on the account: Vue monitors, smart plugs and EV chargers.
  */
 final readonly class Devices
 {
     public function __construct(private TransporterContract $transporter) {}
 
-    /** @return DeviceResponse[] */
+    /**
+     * All devices, with nested sub-devices flattened into the list.
+     *
+     * @return list<DeviceResponse>
+     */
     public function all(): array
     {
-        $data = $this->transporter->get('customers/devices');
-        /** @var array<int, array<string, mixed>> $items */
-        $items = is_array($data['devices'] ?? null) ? $data['devices'] : [];
+        $devices = [];
 
-        return array_map(DeviceResponse::from(...), $items);
+        foreach (DataExtractor::objects($this->transporter->get('customers/devices'), 'devices') as $device) {
+            $devices[] = DeviceResponse::from($device);
+
+            foreach (DataExtractor::objects($device, 'devices') as $subDevice) {
+                $devices[] = DeviceResponse::from($subDevice);
+            }
+        }
+
+        return $devices;
     }
 
     public function find(int $deviceGid): ?DeviceResponse
@@ -36,13 +48,38 @@ final readonly class Devices
         return null;
     }
 
+    /**
+     * Location and billing settings of a device (GET devices/{deviceGid}/locationProperties).
+     */
+    public function locationProperties(int $deviceGid): LocationPropertiesResponse
+    {
+        return LocationPropertiesResponse::from($this->transporter->get("devices/{$deviceGid}/locationProperties"));
+    }
+
+    /**
+     * Return the device with its location properties loaded.
+     */
+    public function populateLocationProperties(DeviceResponse $device): DeviceResponse
+    {
+        return $device->withLocationProperties($this->locationProperties($device->deviceGid));
+    }
+
+    /**
+     * Outlets, chargers and online status of all devices.
+     */
     public function status(): DeviceStatusResponse
     {
         return DeviceStatusResponse::from($this->transporter->get('customers/devices/status'));
     }
 
-    public function properties(int $deviceGid): DeviceResponse
+    /**
+     * Return the given devices with their online status refreshed.
+     *
+     * @param  list<DeviceResponse>  $devices
+     * @return list<DeviceResponse>
+     */
+    public function withConnectionStatus(array $devices): array
     {
-        return DeviceResponse::from($this->transporter->get("devices/{$deviceGid}/locationProperties"));
+        return $this->status()->applyTo($devices);
     }
 }

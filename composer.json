@@ -1,20 +1,47 @@
 {
     "name": "t3chw1zard/emporia-connect",
-    "description": "A framework-agnostic PHP client for the Emporia Vue energy monitoring API.",
-    "keywords": ["emporia", "energy", "vue", "monitoring", "api", "client"],
+    "description": "A framework-agnostic PHP client for the Emporia Vue energy monitoring API, with Laravel and Symfony integration.",
+    "keywords": [
+        "emporia",
+        "energy",
+        "vue",
+        "monitoring",
+        "api",
+        "client",
+        "laravel",
+        "symfony"
+    ],
     "license": "MIT",
     "type": "library",
     "require": {
         "php": "^8.2",
-        "ext-bcmath": "*",
-        "guzzlehttp/guzzle": "^7.0",
-        "psr/simple-cache": "^3.0"
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^7.8",
+        "guzzlehttp/psr7": "^2.6",
+        "phpseclib/phpseclib": "^3.0.36",
+        "psr/cache": "^2.0 || ^3.0",
+        "psr/clock": "^1.0",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.1 || ^2.0",
+        "psr/simple-cache": "^2.0 || ^3.0"
     },
     "require-dev": {
+        "illuminate/config": "^11.0 || ^12.0",
+        "illuminate/container": "^11.0 || ^12.0",
+        "illuminate/support": "^11.0 || ^12.0",
         "laravel/pint": "^1.0",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^11.0",
-        "rector/rector": "^2.0"
+        "rector/rector": "^2.0",
+        "symfony/cache": "^6.4 || ^7.0",
+        "symfony/config": "^6.4 || ^7.0",
+        "symfony/dependency-injection": "^6.4 || ^7.0",
+        "symfony/http-kernel": "^6.4 || ^7.0",
+        "vlucas/phpdotenv": "^5.6"
+    },
+    "suggest": {
+        "ext-gmp": "Speeds up the Cognito SRP login handshake considerably."
     },
     "autoload": {
         "psr-4": {
@@ -30,15 +57,26 @@
         "test": "vendor/bin/phpunit",
         "test:coverage": "vendor/bin/phpunit --coverage-text",
         "format": "vendor/bin/pint",
+        "format:check": "vendor/bin/pint --test",
         "analyse": "vendor/bin/phpstan analyse",
         "refactor": "vendor/bin/rector process",
         "refactor:dry": "vendor/bin/rector process --dry-run",
         "qa": [
-            "@test",
-            "@format",
+            "@format:check",
             "@analyse",
-            "@refactor"
+            "@refactor:dry",
+            "@test"
         ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "T3chW1zard\\EmporiaConnect\\Laravel\\EmporiaConnectServiceProvider"
+            ],
+            "aliases": {
+                "Emporia": "T3chW1zard\\EmporiaConnect\\Laravel\\Facades\\Emporia"
+            }
+        }
     },
     "config": {
         "sort-packages": true,

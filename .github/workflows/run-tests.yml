@@ -5,19 +5,42 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         php: ['8.2', '8.3', '8.4', '8.5']
-    name: PHP ${{ matrix.php }}
+        dependencies: [highest]
+        include:
+          - php: '8.2'
+            dependencies: lowest
+    name: PHP ${{ matrix.php }} (${{ matrix.dependencies }})
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           coverage: xdebug
-      - run: composer install --prefer-dist --no-progress
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
       - run: vendor/bin/phpunit --coverage-text
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    name: Static analysis
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - run: composer validate --strict
+      - run: vendor/bin/pint --test
+      - run: vendor/bin/phpstan analyse --no-progress
+      - run: vendor/bin/rector process --dry-run --no-progress-bar

@@ -4,39 +4,78 @@ declare(strict_types=1);
 
 namespace T3chW1zard\EmporiaConnect;
 
-use GuzzleHttp\Client as GuzzleClient;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Client\ClientInterface;
 use Psr\SimpleCache\CacheInterface;
-use T3chW1zard\EmporiaConnect\Auth\CognitoAuth;
 use T3chW1zard\EmporiaConnect\Contracts\ClientContract;
+use T3chW1zard\EmporiaConnect\Contracts\TokenStoreContract;
 
 /**
- * Static factory for creating an authenticated Emporia Connect client.
+ * Entry point for creating an Emporia Connect client.
  *
- * Usage:
- *   $client = EmporiaConnect::client(username: '...', password: '...');
+ *   $client = EmporiaConnect::client('user@example.com', 'secret', cache: $cache);
+ *   $devices = $client->devices()->all();
  */
 final class EmporiaConnect
 {
-    private const COGNITO_URL = 'https://cognito-idp.us-east-2.amazonaws.com/';
-
-    private const COGNITO_CLIENT_ID = '4qte47jbstod8apnfic0bunmrq';
-
+    /**
+     * Client that logs in with username and password.
+     *
+     * Pass a PSR-16/PSR-6 cache (or a token store) to keep tokens between requests, so the
+     * client only logs in again when the refresh token is no longer valid.
+     */
     public static function client(
         string $username,
+        #[\SensitiveParameter]
         string $password,
-        ?CacheInterface $cache = null,
+        CacheInterface|CacheItemPoolInterface|TokenStoreContract|null $cache = null,
+        ?ClientInterface $httpClient = null,
     ): ClientContract {
-        $guzzle = new GuzzleClient(['timeout' => 10]);
+        return self::configure(self::builder()->withCredentials($username, $password), $cache, $httpClient)->build();
+    }
 
-        $auth = new CognitoAuth(
-            client: $guzzle,
-            cognitoUrl: self::COGNITO_URL,
-            clientId: self::COGNITO_CLIENT_ID,
-            cache: $cache,
-        );
+    /**
+     * Client that starts from previously obtained tokens.
+     */
+    public static function fromTokens(
+        string $idToken,
+        ?string $accessToken = null,
+        ?string $refreshToken = null,
+        CacheInterface|CacheItemPoolInterface|TokenStoreContract|null $cache = null,
+        ?ClientInterface $httpClient = null,
+    ): ClientContract {
+        return self::configure(self::builder()->withTokens($idToken, $accessToken, $refreshToken), $cache, $httpClient)->build();
+    }
 
-        $token = $auth->authenticate($username, $password);
+    /**
+     * Client built from a configuration array; see {@see ClientBuilder::fromOptions()} for the keys.
+     *
+     * @param  array<array-key, mixed>  $options
+     */
+    public static function fromOptions(
+        array $options,
+        CacheInterface|CacheItemPoolInterface|null $cache = null,
+        ?ClientInterface $httpClient = null,
+    ): ClientContract {
+        return ClientBuilder::fromOptions($options, $cache, $httpClient)->build();
+    }
 
-        return new Client(new Transporter($guzzle, $token));
+    public static function builder(): ClientBuilder
+    {
+        return new ClientBuilder;
+    }
+
+    private static function configure(
+        ClientBuilder $builder,
+        CacheInterface|CacheItemPoolInterface|TokenStoreContract|null $cache,
+        ?ClientInterface $httpClient,
+    ): ClientBuilder {
+        $builder = match (true) {
+            $cache instanceof TokenStoreContract => $builder->withTokenStore($cache),
+            $cache !== null => $builder->withCache($cache),
+            default => $builder,
+        };
+
+        return $httpClient instanceof ClientInterface ? $builder->withHttpClient($httpClient) : $builder;
     }
 }

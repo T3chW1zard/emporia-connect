@@ -4,38 +4,49 @@ declare(strict_types=1);
 
 namespace T3chW1zard\EmporiaConnect\Responses;
 
+use T3chW1zard\EmporiaConnect\Contracts\ResponseContract;
+use T3chW1zard\EmporiaConnect\Responses\Concerns\SerializesToJson;
 use T3chW1zard\EmporiaConnect\Support\DataExtractor;
 
 /**
- * Represents the real-time status of a linked vehicle.
+ * Battery and charging state of a linked vehicle.
  */
-readonly class VehicleStatusResponse
+final readonly class VehicleStatusResponse implements ResponseContract
 {
+    use SerializesToJson;
+
     public function __construct(
         public int $vehicleGid,
-        public ?string $vehicleState,
-        public ?float $batteryLevel,
-        public ?float $batteryRange,
-        public ?string $chargingState,
-        public ?float $chargeLimitPercent,
-        public ?int $minutesToFullCharge,
+        public ?string $vehicleState = null,
+        public ?float $batteryLevel = null,
+        public ?float $batteryRange = null,
+        public ?string $chargingState = null,
+        public ?float $chargeLimitPercent = null,
+        public ?int $minutesToFullCharge = null,
+        public ?float $chargeCurrentRequest = null,
+        public ?float $chargeCurrentRequestMax = null,
     ) {}
 
-    /** @param array<string, mixed> $data */
+    /**
+     * @param  array<array-key, mixed>  $data  the full response; values live under "settings"
+     */
     public static function from(array $data): self
     {
+        $settings = DataExtractor::object($data, 'settings') ?? [];
+
         return new self(
-            vehicleGid: DataExtractor::int($data, 'vehicleGid'),
-            vehicleState: DataExtractor::nullableString($data, 'vehicleState'),
-            batteryLevel: DataExtractor::nullableFloat($data, 'batteryLevel'),
-            batteryRange: DataExtractor::nullableFloat($data, 'batteryRange'),
-            chargingState: DataExtractor::nullableString($data, 'chargingState'),
-            chargeLimitPercent: DataExtractor::nullableFloat($data, 'chargeLimitPercent'),
-            minutesToFullCharge: DataExtractor::nullableInt($data, 'minutesToFullCharge'),
+            vehicleGid: DataExtractor::int($settings, 'vehicleGid'),
+            vehicleState: DataExtractor::nullableString($settings, 'vehicleState'),
+            batteryLevel: DataExtractor::nullableFloat($settings, 'batteryLevel'),
+            batteryRange: DataExtractor::nullableFloat($settings, 'batteryRange'),
+            chargingState: DataExtractor::nullableString($settings, 'chargingState'),
+            chargeLimitPercent: DataExtractor::nullableFloat($settings, 'chargeLimitPercent'),
+            minutesToFullCharge: DataExtractor::nullableInt($settings, 'minutesToFullCharge'),
+            chargeCurrentRequest: DataExtractor::nullableFloat($settings, 'chargeCurrentRequest'),
+            chargeCurrentRequestMax: DataExtractor::nullableFloat($settings, 'chargeCurrentRequestMax'),
         );
     }
 
-    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
@@ -46,6 +57,8 @@ readonly class VehicleStatusResponse
             'chargingState' => $this->chargingState,
             'chargeLimitPercent' => $this->chargeLimitPercent,
             'minutesToFullCharge' => $this->minutesToFullCharge,
+            'chargeCurrentRequest' => $this->chargeCurrentRequest,
+            'chargeCurrentRequestMax' => $this->chargeCurrentRequestMax,
         ];
     }
 }

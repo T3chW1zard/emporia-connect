@@ -5,94 +5,146 @@ declare(strict_types=1);
 namespace T3chW1zard\EmporiaConnect\Tests\Feature;
 
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Response;
-use T3chW1zard\EmporiaConnect\Client;
+use Psr\Http\Message\RequestInterface;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Cache\Psr16Cache;
+use T3chW1zard\EmporiaConnect\EmporiaConnect;
 use T3chW1zard\EmporiaConnect\Enums\Scale;
-use T3chW1zard\EmporiaConnect\Enums\Unit;
-use T3chW1zard\EmporiaConnect\Exceptions\EmporiaException;
+use T3chW1zard\EmporiaConnect\Exceptions\AuthenticationException;
+use T3chW1zard\EmporiaConnect\Testing\Fixtures;
+use T3chW1zard\EmporiaConnect\Tests\Support\FakeCognitoSrpServer;
+use T3chW1zard\EmporiaConnect\Tests\Support\Jwt;
 use T3chW1zard\EmporiaConnect\Tests\TestCase;
-use T3chW1zard\EmporiaConnect\Transporter;
 
+/**
+ * Full stack: SRP login against a verifying fake Cognito, token caching, API calls with the id token.
+ */
 final class EmporiaConnectFeatureTest extends TestCase
 {
-    private MockHandler $mock;
+    private FakeCognitoSrpServer $cognito;
+
+    /** @var list<array{request: RequestInterface}> */
+    private array $history = [];
+
+    private int $logins = 0;
+
+    private int $refreshes = 0;
+
+    private string $idToken;
+
+    private string $srpA = '';
 
     protected function setUp(): void
     {
-        $this->mock = new MockHandler;
+        $this->cognito = new FakeCognitoSrpServer('ghlOXVLi1', 'user-uuid-1234', 'correct horse');
+        $this->idToken = Jwt::make(['exp' => time() + 3600, 'sub' => 'user-uuid-1234']);
     }
 
-    private function makeClient(string $token = 'test-token'): Client
+    private function http(): GuzzleClient
     {
-        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($this->mock)]);
-        $transporter = new Transporter($guzzle, $token);
+        $handler = fn (RequestInterface $request): PromiseInterface => Create::promiseFor(
+            $request->getUri()->getHost() === 'cognito-idp.us-east-2.amazonaws.com'
+                ? $this->cognitoResponse(json_decode((string) $request->getBody(), true))
+                : $this->apiResponse($request),
+        );
 
-        return new Client($transporter);
+        $stack = HandlerStack::create($handler);
+        $stack->push(Middleware::history($this->history));
+
+        return new GuzzleClient(['handler' => $stack]);
     }
 
-    private function mockJson(array $data, int $status = 200): void
+    /** @param array<string, mixed> $body */
+    private function cognitoResponse(array $body): Response
     {
-        $this->mock->append(new Response($status, ['Content-Type' => 'application/json'], json_encode($data)));
+        switch ($body['AuthFlow'] ?? $body['ChallengeName'] ?? null) {
+            case 'USER_SRP_AUTH':
+                $this->srpA = $body['AuthParameters']['SRP_A'];
+
+                return $this->json(['ChallengeName' => 'PASSWORD_VERIFIER', 'ChallengeParameters' => $this->cognito->challengeParameters()]);
+
+            case 'PASSWORD_VERIFIER':
+                if (! $this->cognito->verify($this->srpA, $body['ChallengeResponses'])) {
+                    return $this->json(['__type' => 'NotAuthorizedException', 'message' => 'Incorrect username or password.'], 400);
+                }
+
+                $this->logins++;
+
+                return $this->json(['AuthenticationResult' => ['IdToken' => $this->idToken, 'AccessToken' => 'access', 'RefreshToken' => 'refresh', 'ExpiresIn' => 3600]]);
+
+            case 'REFRESH_TOKEN_AUTH':
+                $this->refreshes++;
+                $this->idToken = Jwt::make(['exp' => time() + 7200]);
+
+                return $this->json(['AuthenticationResult' => ['IdToken' => $this->idToken, 'AccessToken' => 'access2', 'ExpiresIn' => 3600]]);
+        }
+
+        return $this->json(['__type' => 'InvalidParameterException'], 400);
     }
 
-    public function test_get_customer_full_round_trip(): void
+    private function apiResponse(RequestInterface $request): Response
     {
-        $this->mockJson(['customerGid' => 99, 'email' => 'test@test.com', 'firstName' => 'Test', 'lastName' => 'User', 'createdAt' => '2024-01-01T00:00:00Z']);
+        if ($request->getHeaderLine('authtoken') !== $this->idToken) {
+            return $this->json(['message' => 'Unauthorized'], 401);
+        }
 
-        $customer = $this->makeClient()->customers()->me();
-
-        $this->assertSame(99, $customer->customerGid);
-        $this->assertSame('test@test.com', $customer->email);
+        return match (true) {
+            $request->getUri()->getPath() === '/customers/devices' => $this->json(Fixtures::devices()),
+            str_starts_with($request->getUri()->getQuery(), 'apiMethod=getChartUsage') => $this->json(Fixtures::chartUsage()),
+            default => $this->json(Fixtures::customer()),
+        };
     }
 
-    public function test_get_devices_full_round_trip(): void
+    /** @param array<array-key, mixed> $body */
+    private function json(array $body, int $status = 200): Response
     {
-        $this->mockJson(['devices' => [[
-            'deviceGid' => 42, 'manufacturerDeviceId' => 'D1', 'model' => 'Vue002',
-            'firmware' => '1.7', 'parentDeviceGid' => null, 'parentChannelNum' => null,
-            'deviceConnected' => ['connected' => true, 'offlineSince' => null],
-            'devices' => [],
-        ]]]);
-
-        $devices = $this->makeClient()->devices()->all();
-
-        $this->assertCount(1, $devices);
-        $this->assertSame(42, $devices[0]->deviceGid);
+        return new Response($status, ['Content-Type' => 'application/json'], json_encode($body));
     }
 
-    public function test_get_channel_usage_full_round_trip(): void
+    public function test_srp_login_is_accepted_by_a_verifying_server_and_tokens_are_cached(): void
     {
-        $this->mockJson(['firstUsageInstant' => '2024-06-01T00:00:00Z', 'usageList' => [0.001, 0.002, 0.003]]);
+        $cache = new Psr16Cache(new ArrayAdapter);
 
-        $usage = $this->makeClient()->channels()->usage(42, '1', Scale::HOUR, Unit::KILOWATT_HOURS);
+        $client = EmporiaConnect::client('user@example.com', 'correct horse', $cache, $this->http());
 
-        $this->assertSame('1', $usage->channelNum);
-        $this->assertCount(3, $usage->usage);
-        $this->assertArrayHasKey('time', $usage->usage[0]);
+        $this->assertSame(1234, $client->customers()->me()->customerGid);
+        $this->assertCount(4, $client->devices()->all());
+        $this->assertSame([0.5, 0.25, null, 1.0], $client->usage()->chart(2345, '1,2,3', scale: Scale::HOUR)->usage);
+        $this->assertSame(1, $this->logins);
+
+        // A new client (new PHP request) re-uses the cached tokens instead of logging in again.
+        $second = EmporiaConnect::client('user@example.com', 'correct horse', $cache, $this->http());
+        $second->customers()->me();
+
+        $this->assertSame(1, $this->logins);
     }
 
-    public function test_transporter_throws_on_guzzle_error(): void
+    public function test_wrong_password_is_rejected(): void
     {
-        $this->mock->append(new ConnectException('Connection refused', new Request('GET', 'test')));
+        $client = EmporiaConnect::client('user@example.com', 'wrong password', httpClient: $this->http());
 
-        $this->expectException(EmporiaException::class);
-        $this->makeClient()->customers()->me();
+        $this->expectException(AuthenticationException::class);
+        $this->expectExceptionMessage('Incorrect username or password.');
+
+        $client->customers()->me();
     }
 
-    public function test_outlet_toggle_round_trip(): void
+    public function test_rejected_token_is_refreshed_transparently(): void
     {
-        $this->mockJson(['outlets' => [['deviceGid' => 10, 'outlet' => ['outletOn' => false, 'loadGid' => null, 'schedules' => []]]], 'evChargers' => []]);
-        $this->mockJson(['deviceGid' => 10, 'outlet' => ['outletOn' => true, 'loadGid' => null, 'schedules' => []]]);
+        $cache = new Psr16Cache(new ArrayAdapter);
+        $client = EmporiaConnect::client('user@example.com', 'correct horse', $cache, $this->http());
+        $client->customers()->me();
 
-        $client = $this->makeClient();
-        $outlets = $client->outlets()->all();
-        $this->assertFalse($outlets[0]->outletOn);
+        // The server revokes the current id token.
+        $this->idToken = 'revoked';
 
-        $updated = $client->outlets()->update(10, true);
-        $this->assertTrue($updated->outletOn);
+        $this->assertSame(1234, $client->customers()->me()->customerGid);
+        $this->assertSame(1, $this->refreshes);
+        $this->assertSame(1, $this->logins);
     }
 }

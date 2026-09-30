@@ -5,6 +5,6 @@ declare(strict_types=1);
 namespace T3chW1zard\EmporiaConnect\Exceptions;
 
 /**
- * Thrown when Cognito authentication fails.
+ * Thrown when logging in to or refreshing tokens with AWS Cognito fails.
  */
 class AuthenticationException extends EmporiaException {}

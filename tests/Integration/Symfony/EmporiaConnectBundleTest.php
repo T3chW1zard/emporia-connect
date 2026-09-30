@@ -8,6 +8,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use T3chW1zard\EmporiaConnect\Client;
 use T3chW1zard\EmporiaConnect\Contracts\ClientContract;
 use T3chW1zard\EmporiaConnect\Symfony\EmporiaConnectBundle;
@@ -27,7 +28,7 @@ final class EmporiaConnectBundleTest extends TestCase
         $container->setParameter('kernel.build_dir', sys_get_temp_dir());
 
         $extension = (new EmporiaConnectBundle)->getContainerExtension();
-        $this->assertNotNull($extension);
+        $this->assertInstanceOf(ExtensionInterface::class, $extension);
         $this->assertSame('emporia_connect', $extension->getAlias());
 
         $extension->load([$config], $container);

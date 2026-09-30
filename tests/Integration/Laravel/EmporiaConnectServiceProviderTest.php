@@ -53,7 +53,7 @@ final class EmporiaConnectServiceProviderTest extends TestCase
     {
         Facade::clearResolvedInstances();
         Facade::setFacadeApplication(null);
-        Container::setInstance(null);
+        Container::setInstance();
     }
 
     private function register(): EmporiaConnectServiceProvider

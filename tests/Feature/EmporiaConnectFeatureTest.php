@@ -8,6 +8,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -46,7 +47,7 @@ final class EmporiaConnectFeatureTest extends TestCase
 
     private function http(): GuzzleClient
     {
-        $handler = fn (RequestInterface $request) => Create::promiseFor(
+        $handler = fn (RequestInterface $request): PromiseInterface => Create::promiseFor(
             $request->getUri()->getHost() === 'cognito-idp.us-east-2.amazonaws.com'
                 ? $this->cognitoResponse(json_decode((string) $request->getBody(), true))
                 : $this->apiResponse($request),

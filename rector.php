@@ -33,6 +33,8 @@ return RectorConfig::configure()
     ])
     ->withComposerBased(phpunit: true)
     ->withImportNames(importShortClasses: false)
+    // Small code base: run in one process so errors are reported with the file that caused them.
+    ->withoutParallel()
     ->withSkip([
         // PHPUnit calls setUp() and reads fixtures through the parent class; these rules break tests.
         PrivatizeFinalClassMethodRector::class => [__DIR__.'/tests'],
